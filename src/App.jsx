@@ -21,7 +21,7 @@ function App() {
           </Link>
 
           <Link
-            to="/venue"
+            to="/venues"
             className="text-2xl font-semibold underline hover:text-gray-700"
           >
             Venue

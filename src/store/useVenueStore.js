@@ -10,6 +10,7 @@ const useVenueStore = create((set) => ({
         {
           ...venue,
           id: crypto.randomUUID(), // 👈 unique ID created here
+          seating: [],
         },
       ],
     })),
@@ -25,6 +26,52 @@ const useVenueStore = create((set) => ({
         v.id === id ? { ...v, ...updatedData } : v
       ),
     })),
+
+  addCategorytoVenue: (venueId, categoryName) => {
+    set((state) => ({
+      venues: state.venues.map((v) =>
+        v.id === venueId
+          ? {
+              ...v,
+              seating: [
+                ...v.seating,
+                {
+                  id: crypto.randomUUID(),
+                  categoryName,
+                  subCategories: [],
+                },
+              ],
+            }
+          : v
+      ),
+    }));
+  },
+
+  addSubCategoryToCategory: (venueId, categoryId, subCategoryName) => {
+    set((state) => ({
+      venues: state.venues.map(() =>
+        v.id === venueId
+          ? {
+              ...v,
+              seating: v.seating.map((c) =>
+                c.id === categoryId
+                  ? {
+                      ...c,
+                      subCategories: [
+                        ...c.subCategories,
+                        {
+                          id: crypto.randomUUID(),
+                          name: subCategoryName,
+                        },
+                      ],
+                    }
+                  : c
+              ),
+            }
+          : v
+      ),
+    }));
+  },
 }));
 
 export default useVenueStore;
