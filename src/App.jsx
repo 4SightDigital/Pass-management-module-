@@ -6,7 +6,7 @@ import useVenueStore from "./store/useVenueStore";
 
 function App() {
   const myStore = useVenueStore();
-  console.log(myStore);
+  // console.log(myStore);
 
   return (
     <div className="min-h-screen bg-gradient-to-r from-[#C8FECC] to-[#799EBE]">
@@ -32,7 +32,7 @@ function App() {
         <div className="p-4 sm:p-6">
           <Routes>
             <Route path="/events" element={<Events />} />
-            <Route path="/" element={<Venues />} />
+            <Route path="/venues" element={<Venues />} />
           </Routes>
         </div>
       </BrowserRouter>

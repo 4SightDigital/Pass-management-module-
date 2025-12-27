@@ -120,7 +120,7 @@ function Venues() {
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Add a new venue"
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition shadow-[0_4px_8px_rgba(0,0,0,0.15),0_0_0_1px_rgba(0,0,0,0.05)]"
               />
             </div>
 
@@ -138,7 +138,7 @@ function Venues() {
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 placeholder="Add a location"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition shadow-[0_4px_8px_rgba(0,0,0,0.15),0_0_0_1px_rgba(0,0,0,0.05)]"
               />
             </div>
 
@@ -156,7 +156,7 @@ function Venues() {
                 value={totalSeats}
                 onChange={(e) => setTotalSeats(e.target.value)}
                 placeholder="Add total seats"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition shadow-[0_4px_8px_rgba(0,0,0,0.15),0_0_0_1px_rgba(0,0,0,0.05)]"
               />
             </div>
 
@@ -174,7 +174,7 @@ function Venues() {
                 value={venueType}
                 onChange={(e) => setVenueType(e.target.value)}
                 placeholder="Type of venue"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition shadow-[0_4px_8px_rgba(0,0,0,0.15),0_0_0_1px_rgba(0,0,0,0.05)]"
               />
             </div>
 
@@ -229,7 +229,7 @@ function Venues() {
             Saved Venues
           </h2>
 
-          <div className="overflow-x-auto bg-white rounded-xl shadow-[0_4px_8px_rgba(0,0,0,0.12)]">
+          <div className="overflow-x-auto bg-white rounded-md shadow-[0_4px_8px_rgba(0,0,0,0.12)]">
             <table className="min-w-full border-collapse">
               <thead className="bg-gray-100">
                 <tr>
