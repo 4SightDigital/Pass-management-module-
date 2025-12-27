@@ -4,34 +4,16 @@ import useVenueStore from "../store/useVenueStore";
 
 function Venues() {
   const { venues, addVenue, deleteVenue, updateVenue } = useVenueStore();
-  // const addVenue = useVenueStore((state) => state.addVenue);
-  // const venues = useVenueStore((state) => state.venues);
-
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
   const [venueType, setVenueType] = useState("");
   const [totalSeats, setTotalSeats] = useState("");
 
-  const [editId, setEditId] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [editData, setEditData] = useState({});
-
+  const [editError, setEditError] = useState("");
   const handleAddVenue = async (e) => {
     e.preventDefault();
-
-    // if (editId) {
-    //   //for updating my venue
-    //   updateVenue(editId, {
-    //     name,
-    //     location,
-    //     venueType,
-    //     totalSeats: Number(totalSeats),
-    //   });
-    //   setEditId(null);
-    // } else {
-    //   // for adding a new venue
-
-    // }
     addVenue({
       name,
       location,
@@ -56,20 +38,20 @@ function Venues() {
       name: venue.name,
       location: venue.location,
       venueType: venue.venueType,
+      totalSeats: venue.totalSeats,
     });
   };
   const saveEdit = (id) => {
-    updateVenue(id, editData);
-    setEditId(null);
-    setEditData({});
-  };
+    if (!editData.name?.trim()) {
+      setEditError("Venue name is required");
+      return; // ⛔ stop saving
+    }
 
-  const handleEdit = (venue) => {
-    setEditId(venue.id);
-    setName(venue.name);
-    setLocation(venue.location);
-    setVenueType(venue.venueType);
-    setTotalSeats(venue.totalSeats);
+    updateVenue(id, editData);
+    setEditingId(null);
+    console.log(editData);
+    setEditData({});
+    setEditError("");
   };
 
   const resetForm = () => {
@@ -144,6 +126,11 @@ function Venues() {
               <li key={v.id}>
                 {editingId === v.id ? (
                   <>
+                    {editError && (
+                      <p style={{ color: "red", fontSize: "14px" }}>
+                        {editError}
+                      </p>
+                    )}
                     <input
                       type="text"
                       value={editData.name || ""}
@@ -153,6 +140,7 @@ function Venues() {
                     />
 
                     <input
+                    type="text"
                       value={editData.location || ""}
                       onChange={(e) =>
                         setEditData({ ...editData, location: e.target.value })
@@ -160,9 +148,18 @@ function Venues() {
                     />
 
                     <input
+                    type="text"
                       value={editData.venueType ?? ""}
                       onChange={(e) =>
                         setEditData({ ...editData, venueType: e.target.value })
+                      }
+                    />
+
+                    <input
+                      type="number"
+                      value={editData.totalSeats ?? ""}
+                      onChange={(e) =>
+                        setEditData({ ...editData, totalSeats: e.target.value })
                       }
                     />
 
@@ -173,7 +170,8 @@ function Venues() {
                   </>
                 ) : (
                   <>
-                    <strong>{v.name}</strong> — {v.location} — {v.venueType}
+                    <strong>{v.name}</strong> — {v.location} — {v.venueType} -
+                    {v.totalSeats}
                     <button onClick={() => startEdit(v)}>✏️ Edit</button>
                     <button onClick={() => deleteVenue(v.id)}>🗑 Delete</button>
                   </>
