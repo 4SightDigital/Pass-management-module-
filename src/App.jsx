@@ -1,36 +1,43 @@
-import React from 'react'
-import { BrowserRouter, Link, Route, Routes } from 'react-router-dom'
-import Events from './pages/Events'
-import Venues from './pages/Venues'
-import useVenueStore from './store/useVenueStore'
+import React from "react";
+import { BrowserRouter, Link, Route, Routes } from "react-router-dom";
+import Events from "./pages/Events";
+import Venues from "./pages/Venues";
+import useVenueStore from "./store/useVenueStore";
 
 function App() {
-  const myStore = useVenueStore()
-  console.log(myStore)
+  const myStore = useVenueStore();
+  console.log(myStore);
+
   return (
-    <>
-    <BrowserRouter>
-    <nav className='flex'>
-      <div className='text-3xl font-bold underline p-5'>
-      <Link to="/events">Events</Link>
-      
-      </div>
-      <div className='text-3xl font-bold underline p-5'>
-      <Link to="/venue">Venue</Link>
-      </div>
+    <div className="min-h-screen bg-gradient-to-r from-[#C8FECC] to-[#799EBE]">
+      <BrowserRouter>
+        {/* Navbar */}
+        <nav className="flex gap-6 p-5">
+          <Link
+            to="/events"
+            className="text-2xl font-semibold underline hover:text-gray-700"
+          >
+            Events
+          </Link>
 
-    </nav>
+          <Link
+            to="/venue"
+            className="text-2xl font-semibold underline hover:text-gray-700"
+          >
+            Venue
+          </Link>
+        </nav>
 
-
-    <Routes>
-
-    <Route path='/events' element={<Events/>}> </Route>
-    <Route path='/venue' element={Venues()}> </Route>
-    </Routes>
-    </BrowserRouter>
-
-    </>
-  )
+        {/* Page Content */}
+        <div className="p-4 sm:p-6">
+          <Routes>
+            <Route path="/events" element={<Events />} />
+            <Route path="/" element={<Venues />} />
+          </Routes>
+        </div>
+      </BrowserRouter>
+    </div>
+  );
 }
 
-export default App
+export default App;
