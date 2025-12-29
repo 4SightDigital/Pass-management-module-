@@ -1,42 +1,47 @@
 import React from "react";
-import { BrowserRouter, Link, Route, Routes } from "react-router-dom";
-import Events from "./pages/Events";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useState } from "react";
+import Sidebar from "./components/Sidebar";
 import Venues from "./pages/Venues";
-import useVenueStore from "./store/useVenueStore";
+import Events from "./pages/Events";
+import ManageSeating from "./pages/ManageSeating";
 
 function App() {
-  const myStore = useVenueStore();
-  // console.log(myStore);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-[#C8FECC] to-[#799EBE]">
-      <BrowserRouter>
-        {/* Navbar */}
-        <nav className="flex gap-6 p-5">
-          <Link
-            to="/events"
-            className="text-2xl font-semibold underline hover:text-gray-700"
-          >
-            Events
-          </Link>
+    <BrowserRouter>
+      <div className="flex min-h-screen">
 
-          <Link
-            to="/venues"
-            className="text-2xl font-semibold underline hover:text-gray-700"
-          >
-            Venue
-          </Link>
-        </nav>
+        {/* Sidebar */}
+        <Sidebar
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+        />
 
-        {/* Page Content */}
-        <div className="p-4 sm:p-6">
+        {/* Main Content */}
+        <main className="flex-1 bg-gradient-to-b from-[#C8FECC] to-[#799EBE] p-6">
+          
+          {/* Mobile Header */}
+          <div className="md:hidden mb-4">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="px-3 py-2 bg-white rounded-md shadow"
+            >
+              ☰
+            </button>
+          </div>
+
           <Routes>
-            <Route path="/events" element={<Events />} />
             <Route path="/venues" element={<Venues />} />
+            <Route path="/events" element={<Events />} />
+            <Route path="/manageSeats" element={<ManageSeating />} />
+
           </Routes>
-        </div>
-      </BrowserRouter>
-    </div>
+
+        </main>
+      </div>
+    </BrowserRouter>
   );
 }
 

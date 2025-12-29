@@ -1,9 +1,19 @@
 import axios from "axios";
 import React, { useState } from "react";
 import useVenueStore from "../store/useVenueStore";
+import AddCategory from "../components/AddCategory";
+import AddSubCategory from "../components/AddSubCategory";
 
 function Venues() {
-  const { venues, addVenue, deleteVenue, updateVenue } = useVenueStore();
+  const { 
+    venues,
+    addVenue,
+    deleteVenue,
+    updateVenue,
+    addCategoryToVenue,
+    addSubCategoryToCategory,
+  } = useVenueStore();
+  // console.log("i am venues", venues);
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
   const [venueType, setVenueType] = useState("");
@@ -12,6 +22,7 @@ function Venues() {
   const [editingId, setEditingId] = useState(null);
   const [editData, setEditData] = useState({});
   const [editError, setEditError] = useState("");
+
   const handleAddVenue = async (e) => {
     e.preventDefault();
     addVenue({
@@ -138,6 +149,7 @@ function Venues() {
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 placeholder="Add a location"
+                required
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition shadow-[0_4px_8px_rgba(0,0,0,0.15),0_0_0_1px_rgba(0,0,0,0.05)]"
               />
             </div>
@@ -373,6 +385,7 @@ function Venues() {
       {/*
       right side section ends here
       */}
+      
     </>
   );
 }

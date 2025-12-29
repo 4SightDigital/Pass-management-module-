@@ -27,7 +27,9 @@ const useVenueStore = create((set) => ({
       ),
     })),
 
-  addCategorytoVenue: (venueId, categoryName) => {
+
+    // categories of venues
+  addCategoryToVenue: (venueId, categoryName, categoryTotalSeats) => {
     set((state) => ({
       venues: state.venues.map((v) =>
         v.id === venueId
@@ -38,6 +40,7 @@ const useVenueStore = create((set) => ({
                 {
                   id: crypto.randomUUID(),
                   categoryName,
+                  categoryTotalSeats,
                   subCategories: [],
                 },
               ],
@@ -47,9 +50,12 @@ const useVenueStore = create((set) => ({
     }));
   },
 
-  addSubCategoryToCategory: (venueId, categoryId, subCategoryName) => {
+
+
+  // sub categories of categories 
+  addSubCategoryToCategory: (venueId, categoryId, subCategory) => {
     set((state) => ({
-      venues: state.venues.map(() =>
+      venues: state.venues.map((v) =>
         v.id === venueId
           ? {
               ...v,
@@ -61,7 +67,8 @@ const useVenueStore = create((set) => ({
                         ...c.subCategories,
                         {
                           id: crypto.randomUUID(),
-                          name: subCategoryName,
+                          name: subCategory.name,
+                          seats: subCategory.seats
                         },
                       ],
                     }
