@@ -1,34 +1,61 @@
 import { create } from "zustand";
+import { createVenue, deleteVenue, updateVenue } from "../api/venues.api";
 
 const useVenueStore = create((set) => ({
   venues: [],
+  loading: false,
+  error: null,
 
-  addVenue: (venue) =>
-    set((state) => ({
-      venues: [
-        ...state.venues,
-        {
-          ...venue,
-          id: crypto.randomUUID(), // 👈 unique ID created here
-          seating: [],
-        },
-      ],
-    })),
+  fetchVenues: async () => {
+    try {
+      set({ loading: true });
+      const res = await getVenues();
+      set({
+        venues: res.data.map((v) => ({ ...v, seating: [] })),
+        loading: false,
+      });
+    } catch {
+      set({ error: "Failed to load venues", loading: false });
+    }
+  },
 
-  deleteVenue: (id) =>
+  addVenue: async (venueData) => {
+    try {
+      set({ loading: true, error: null });
+
+      const res = await createVenue(venueData);
+
+      // backend response becomes source of truth
+      set((state) => ({
+        venues: [...state.venues, { ...res.data, seating: [] }],
+        loading: false,
+      }));
+    } catch (err) {
+      console.error(err);
+      set({
+        error: "Failed to add venue",
+        loading: false,
+      });
+      throw err; // important so UI can react
+    }
+  },
+  deleteVenue: async (id) => {
+    await deleteVenue(id);
     set((state) => ({
       venues: state.venues.filter((v) => v.id !== id),
-    })),
+    }));
+  },
 
-  updateVenue: (id, updatedData) =>
+  updateVenue: async (id, data) => {
+    const res = await updateVenue(id, data);
     set((state) => ({
       venues: state.venues.map((v) =>
-        v.id === id ? { ...v, ...updatedData } : v
+        v.id === id ? { ...v, ...res.data } : v
       ),
-    })),
+    }));
+  },
 
-
-    // categories of venues
+  // categories of venues
   addCategoryToVenue: (venueId, categoryName, categoryTotalSeats) => {
     set((state) => ({
       venues: state.venues.map((v) =>
@@ -50,9 +77,7 @@ const useVenueStore = create((set) => ({
     }));
   },
 
-
-
-  // sub categories of categories 
+  // sub categories of categories
   addSubCategoryToCategory: (venueId, categoryId, subCategory) => {
     set((state) => ({
       venues: state.venues.map((v) =>
@@ -68,7 +93,7 @@ const useVenueStore = create((set) => ({
                         {
                           id: crypto.randomUUID(),
                           name: subCategory.name,
-                          seats: subCategory.seats
+                          seats: subCategory.seats,
                         },
                       ],
                     }
@@ -79,6 +104,26 @@ const useVenueStore = create((set) => ({
       ),
     }));
   },
+
+  // EVENTS    slice begins hereee=============================================
+
+  events: [],
+
+  addEvent: (event) =>
+    set((state) => ({
+      events: [
+        ...state.events,
+        {
+          id: crypto.randomUUID(),
+          name: event.name,
+          venueId: event.venueId,
+          venueName: event.venueName, // optional, for UI
+          status: event.status,
+          startTime: event.startTime,
+          endTime: event.endTime,
+        },
+      ],
+    })),
 }));
 
 export default useVenueStore;

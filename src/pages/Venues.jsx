@@ -5,15 +5,17 @@ import AddCategory from "../components/AddCategory";
 import AddSubCategory from "../components/AddSubCategory";
 
 function Venues() {
-  const { 
+  const {
     venues,
     addVenue,
     deleteVenue,
     updateVenue,
-    addCategoryToVenue,
-    addSubCategoryToCategory,
+    fetchVenues,
+    loading,
+    error,
   } = useVenueStore();
   // console.log("i am venues", venues);
+
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
   const [venueType, setVenueType] = useState("");
@@ -25,21 +27,19 @@ function Venues() {
 
   const handleAddVenue = async (e) => {
     e.preventDefault();
-    addVenue({
-      name,
-      location,
-      venueType,
-      totalSeats: Number(totalSeats),
-    });
-    resetForm();
-    alert("Venue added");
 
     try {
-      // chamnge the below api with the backend
-      // await axios.post("http://localhost:8000/venues", newVenue)
+      await addVenue({
+        name,
+        location,
+        venueType,
+        totalSeats: Number(totalSeats),
+      });
+
+      resetForm();
+      alert("Venue added successfully");
     } catch (error) {
-      console.error(error);
-      alert("failed to add venue");
+      alert("Failed to add venue");
     }
   };
 
@@ -236,31 +236,31 @@ function Venues() {
       right side section begins from below
       */}
 
-        <div className="mt-6 lg:mt-0 lg:ml-8 mr-8 flex-1">
-          <h2 className="text-lg font-semibold text-gray-700 mb-4">
+        <div className="mt-6 lg:mt-0 lg:ml-8 mx-auto w-full flex-1 px-4 lg:px-0">
+          <h2 className="text-lg font-semibold text-gray-700 mb-4 text-center lg:text-left">
             Saved Venues
           </h2>
 
-          <div className="overflow-x-auto bg-white rounded-md shadow-[0_4px_8px_rgba(0,0,0,0.12)]">
-            <table className="min-w-full border-collapse">
+          <div className="mx-auto max-w-5xl overflow-x-auto bg-white rounded-md shadow-[0_4px_8px_rgba(0,0,0,0.12)]">
+            <table className="min-w-full border-collapse table-fixed">
               <thead className="bg-gray-100">
                 <tr>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
+                  <th className="w-16 px-2 py-3 text-left text-sm font-medium text-gray-600">
                     Sr No
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
+                  <th className="w-1/4 px-4 py-3 text-left text-sm font-medium text-gray-600">
                     Name
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
+                  <th className="w-1/4 px-4 py-3 text-left text-sm font-medium text-gray-600">
                     Location
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
+                  <th className="w-1/6 px-4 py-3 text-left text-sm font-medium text-gray-600">
                     Type
                   </th>
-                  <th className="px-4 py-3 text-left text-sm font-medium text-gray-600">
+                  <th className="min-w-[80px] px-2 py-3 text-left text-sm font-medium text-gray-600">
                     Seats
                   </th>
-                  <th className="px-4 py-3 text-center text-sm font-medium text-gray-600">
+                  <th className="w-32 px-4 py-3 text-center text-sm font-medium text-gray-600">
                     Actions
                   </th>
                 </tr>
@@ -269,7 +269,7 @@ function Venues() {
               <tbody className="divide-y">
                 {venues.map((v, index) => (
                   <tr key={v.id} className="hover:bg-gray-50 transition">
-                    <td className="px-4 py-3 text-sm text-gray-700">
+                    <td className="w-16 px-2 py-3 text-sm text-gray-700">
                       {index + 1}
                     </td>
                     {editingId === v.id ? (
@@ -325,19 +325,22 @@ function Venues() {
                           />
                         </td>
 
-                        <td className="px-4 py-2 text-center space-x-2">
-                          <button
-                            onClick={() => saveEdit(v.id)}
-                            className="px-3 py-1 bg-emerald-500 text-white rounded-md hover:bg-emerald-600"
-                          >
-                            Save
-                          </button>
-                          <button
-                            onClick={() => setEditingId(null)}
-                            className="px-3 py-1 bg-gray-400 text-white rounded-md hover:bg-gray-500"
-                          >
-                            Cancel
-                          </button>
+                        <td className="w-32 px-2 py-2 text-center">
+                          <div className="flex justify-center gap-2">
+                            <button
+                              onClick={() => saveEdit(v.id)}
+                              className="min-w-[64px] px-2 py-1 text-xs bg-emerald-500 text-white rounded hover:bg-emerald-600"
+                            >
+                              Save
+                            </button>
+
+                            <button
+                              onClick={() => setEditingId(null)}
+                              className="min-w-[64px] px-2 py-1 text-xs bg-gray-400 text-white rounded hover:bg-gray-500"
+                            >
+                              Cancel
+                            </button>
+                          </div>
                         </td>
                       </>
                     ) : (
@@ -352,22 +355,25 @@ function Venues() {
                         <td className="px-4 py-3 text-sm text-gray-700">
                           {v.venueType}
                         </td>
-                        <td className="px-4 py-3 text-sm text-gray-700">
+                        <td className="w-20 px-2 py-3 text-sm text-gray-700">
                           {v.totalSeats}
                         </td>
-                        <td className="px-4 py-3 text-center space-x-2">
-                          <button
-                            onClick={() => startEdit(v)}
-                            className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => deleteVenue(v.id)}
-                            className="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600"
-                          >
-                            Delete
-                          </button>
+                        <td className="w-32 px-2 py-2 text-center">
+                          <div className="flex justify-center gap-2">
+                            <button
+                              onClick={() => startEdit(v)}
+                              className="min-w-[64px] px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
+                            >
+                              Edit
+                            </button>
+
+                            <button
+                              onClick={() => deleteVenue(v.id)}
+                              className="min-w-[64px] px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600"
+                            >
+                              Delete
+                            </button>
+                          </div>
                         </td>
                       </>
                     )}
@@ -385,7 +391,6 @@ function Venues() {
       {/*
       right side section ends here
       */}
-      
     </>
   );
 }

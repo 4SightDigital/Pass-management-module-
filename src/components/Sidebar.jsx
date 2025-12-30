@@ -27,7 +27,7 @@ function Sidebar({ isOpen, onClose }) {
           <nav className="space-y-2">
             <SidebarLink to="/venues" label="Venues" />
             <SidebarLink to="/events" label="Events" />
-            <SidebarLink to="/manageSeats" label="Manage"/>
+            <SidebarLink to="/manageSeats" label="Manage Seating"/>
           </nav>
         </div>
       </aside>

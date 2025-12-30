@@ -108,7 +108,7 @@ const ManageSeating = () => {
                  w-5 h-5 rounded-full
                  bg-indigo-100 text-indigo-700 text-xs"
                                   >
-                                    {subIndex + 1}
+                                    {catIndex + 1}.{subIndex + 1}
                                   </span>
 
                                   <span className="text-gray-700">
