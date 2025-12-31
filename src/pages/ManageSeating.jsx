@@ -4,8 +4,13 @@ import AddCategory from "../components/AddCategory";
 import AddSubCategory from "../components/AddSubCategory";
 
 const ManageSeating = () => {
-  const { venues, addCategoryToVenue, addSubCategoryToCategory } =
-    useVenueStore();
+  const {
+    venues,
+    addCategoryToVenue,
+    addSubCategoryToCategory,
+    fetchVenueHierarchy,
+    saveVenueHierarchyToBackend,
+  } = useVenueStore();
 
   const [openVenueId, setOpenVenueId] = useState(null);
 
@@ -28,7 +33,13 @@ const ManageSeating = () => {
             >
               {/* Accordion Header */}
               <button
-                onClick={() => setOpenVenueId(isOpen ? null : venue.id)}
+                onClick={() => {
+                  const next = isOpen ? null : venue.id;
+                  setOpenVenueId(next);
+                  if (!isOpen && venue.seating.length === 0) {
+                    fetchVenueHierarchy(venue.id);
+                  }
+                }}
                 className="w-full flex items-center justify-between
                      px-5 py-4 text-left
                      hover:bg-gray-50 rounded-lg"
@@ -54,9 +65,10 @@ const ManageSeating = () => {
                 <div className="px-5 pb-5 pt-2 space-y-4 border-t">
                   {/* Add Category */}
                   <AddCategory
-                    onAdd={(name, seats) =>
-                      addCategoryToVenue(venue.id, name, seats)
-                    }
+                    onAdd={(name, seats) => {
+                      addCategoryToVenue(venue.id, name, seats);
+                      saveVenueHierarchyToBackend(venue.id);
+                    }}
                   />
 
                   {/* Categories */}

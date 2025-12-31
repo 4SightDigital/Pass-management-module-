@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import useVenueStore from "../store/useVenueStore";
+import { useNavigate } from "react-router-dom";
 
 const Events = () => {
   const venues = useVenueStore((state) => state.venues);
@@ -49,6 +50,7 @@ const Events = () => {
 
     resetEventData();
   };
+  const navigate = useNavigate();
 
   return (
     <>
@@ -282,6 +284,14 @@ const Events = () => {
                       <td className="px-4 py-3 text-sm">{e.status}</td>
                       <td className="px-4 py-3 text-sm">{e.startTime}</td>
                       <td className="px-4 py-3 text-sm">{e.endTime}</td>
+                      <td>{e.name}</td>
+                      <td>
+                        <button
+                          onClick={() => navigate(`/events/${e.id}/book`)}
+                        >
+                          Book Ticket
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>

@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { createVenue, deleteVenue, updateVenue } from "../api/venues.api";
+import { getVenueHierarchy, saveVenueHierarchy } from "../api/category.api";
 
 const useVenueStore = create((set) => ({
   venues: [],
@@ -56,6 +57,58 @@ const useVenueStore = create((set) => ({
   },
 
   // categories of venues
+
+  fetchVenueHierarchy: async (venueId) => {
+    try {
+      set({ loading: true });
+
+      const res = await getVenueHierarchy(venueId);
+
+      set((state) => ({
+        venues: state.venues.map((v) =>
+          v.id === venueId
+            ? {
+                ...v,
+                seating: res.data.seating || [],
+              }
+            : v
+        ),
+        loading: false,
+      }));
+    } catch (err) {
+      console.error(err);
+      set({
+        error: "Failed to load seating hierarchy",
+        loading: false,
+      });
+    }
+  },
+
+  saveVenueHierarchyToBackend: async (venueId) => {
+    try {
+      set({ loading: true });
+
+      const venue = useVenueStore
+        .getState()
+        .venues.find((v) => v.id === venueId);
+
+      if (!venue) return;
+
+      await saveVenueHierarchy(venueId, {
+        seating: venue.seating,
+      });
+
+      set({ loading: false });
+    } catch (err) {
+      console.error(err);
+      set({
+        error: "Failed to save seating hierarchy",
+        loading: false,
+      });
+      throw err;
+    }
+  },
+
   addCategoryToVenue: (venueId, categoryName, categoryTotalSeats) => {
     set((state) => ({
       venues: state.venues.map((v) =>

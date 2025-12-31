@@ -14,7 +14,7 @@ function Venues() {
     loading,
     error,
   } = useVenueStore();
-  // console.log("i am venues", venues);
+  console.log("i am venues", venues);
 
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
@@ -26,30 +26,33 @@ function Venues() {
   const [editError, setEditError] = useState("");
 
   const handleAddVenue = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    try {
-      await addVenue({
-        name,
-        location,
-        venueType,
-        totalSeats: Number(totalSeats),
-      });
+  try {
+    await addVenue({
+      name,
+      location,
+      venue_type: venueType,        // ✅ map state → API field
+      total_capacity: Number(totalSeats),
+      
+    });
 
-      resetForm();
-      alert("Venue added successfully");
-    } catch (error) {
-      alert("Failed to add venue");
-    }
-  };
+    resetForm();
+    alert("Venue added successfully");
+  } catch (error) {
+    console.log("error", error?.response?.data || error);
+    alert("Failed to add venue");
+  }
+};
+
 
   const startEdit = (venue) => {
     setEditingId(venue.id);
     setEditData({
       name: venue.name,
       location: venue.location,
-      venueType: venue.venueType,
-      totalSeats: venue.totalSeats,
+      venue_type: venue.venue_type,
+      total_capacity: venue.total_capacity,
     });
   };
   const saveEdit = (id) => {
@@ -301,11 +304,11 @@ function Venues() {
                         <td className="px-4 py-2">
                           <input
                             className="w-full px-2 py-1 border rounded-md"
-                            value={editData.venueType ?? ""}
+                            value={editData.venue_type ?? ""}
                             onChange={(e) =>
                               setEditData({
                                 ...editData,
-                                venueType: e.target.value,
+                                venue_type: e.target.value,
                               })
                             }
                           />
@@ -315,11 +318,11 @@ function Venues() {
                           <input
                             type="number"
                             className="w-full px-2 py-1 border rounded-md"
-                            value={editData.totalSeats ?? ""}
+                            value={editData.total_capacity ?? ""}
                             onChange={(e) =>
                               setEditData({
                                 ...editData,
-                                totalSeats: e.target.value,
+                                total_capacity: e.target.value,
                               })
                             }
                           />
@@ -353,10 +356,10 @@ function Venues() {
                           {v.location}
                         </td>
                         <td className="px-4 py-3 text-sm text-gray-700">
-                          {v.venueType}
+                          {v.venue_type}
                         </td>
                         <td className="w-20 px-2 py-3 text-sm text-gray-700">
-                          {v.totalSeats}
+                          {v.total_capacity}
                         </td>
                         <td className="w-32 px-2 py-2 text-center">
                           <div className="flex justify-center gap-2">
