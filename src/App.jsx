@@ -52,7 +52,7 @@ function App() {
               <Routes>
                 <Route path="/" element={
                   <div className="bg-white rounded-xl shadow-sm p-6">
-                    <h1 className="text-2xl font-bold text-gray-800 mb-4">Welcome to SeatFlow Dashboard</h1>
+                    <h1 className="text-2xl font-bold text-gray-800 mb-4">Welcome to foresight Dashboard</h1>
                     <p className="text-gray-600">Select an option from the sidebar to get started.</p>
                   </div>
                 } />
