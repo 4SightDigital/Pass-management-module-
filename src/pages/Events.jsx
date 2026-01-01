@@ -40,12 +40,12 @@ const Events = () => {
     const selectedVenue = venues[venueIndex];
 
     addEvent({
-      id: crypto.randomUUID(),
+      
       name: eventName,
-      venueName: selectedVenue.name,
+      venue: selectedVenue.name,
       status: eventStatus,
-      startTime,
-      endTime,
+      start_datetime:startTime,
+      end_datetime:endTime,
     });
 
     resetEventData();
@@ -200,7 +200,7 @@ const Events = () => {
                     </label>
                     <div className="relative">
                       <input
-                        type="date"
+                        type="datetime-local"
                         value={startTime}
                         min={today}
                         onChange={(e) => setStartTime(e.target.value)}
@@ -222,7 +222,7 @@ const Events = () => {
                     </label>
                     <div className="relative">
                       <input
-                        type="date"
+                        type="datetime-local"
                         value={endTime}
                         min={startTime || today}
                         onChange={(e) => setEndTime(e.target.value)}

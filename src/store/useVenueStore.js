@@ -1,9 +1,10 @@
 import { create } from "zustand";
 import { createVenue, deleteVenue, updateVenue } from "../api/venues.api";
 import { getVenueHierarchy, saveVenueHierarchy } from "../api/category.api";
+import { createEvent } from "../api/events.api";
 
 const useVenueStore = create((set) => ({
-  venues: [],
+  venues: [],events: [],
   loading: false,
   error: null,
 
@@ -39,6 +40,18 @@ const useVenueStore = create((set) => ({
       });
       throw err; // important so UI can react
     }
+  },
+  addEvent: async (event) => {
+    try {
+      set({ loading: true, error: null });
+
+      const res = await createEvent(event);
+
+      set((state) => ({
+        events: [...state.events,{...res.data},
+        ],
+      }));
+    } catch (error) {}
   },
   deleteVenue: async (id) => {
     await deleteVenue(id);
@@ -160,23 +173,7 @@ const useVenueStore = create((set) => ({
 
   // EVENTS    slice begins hereee=============================================
 
-  events: [],
-
-  addEvent: (event) =>
-    set((state) => ({
-      events: [
-        ...state.events,
-        {
-          id: crypto.randomUUID(),
-          name: event.name,
-          venueId: event.venueId,
-          venueName: event.venueName, // optional, for UI
-          status: event.status,
-          startTime: event.startTime,
-          endTime: event.endTime,
-        },
-      ],
-    })),
+  
 }));
 
 export default useVenueStore;
