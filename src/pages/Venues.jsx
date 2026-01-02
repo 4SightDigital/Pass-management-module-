@@ -198,7 +198,7 @@ function Venues() {
                     value={venueType}
                     required
                     onChange={(e) => setVenueType(e.target.value)}
-                    placeholder="e.g., Conference Hall, Stadium, Theater"
+                    placeholder="e.g., Conference Hall"
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald500 outline-none transition-all duration-300 hover:border-gray-400"
                   />
                   <div className="absolute right-3 top-3">
