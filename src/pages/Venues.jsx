@@ -70,8 +70,12 @@ function Venues() {
       return;
     }
 
-     if (!editData.total_capacity?.trim()) {
-      setEditError("Total Seats is required");
+    if (
+      editData.total_capacity === null ||
+      editData.total_capacity === undefined ||
+      editData.total_capacity <= 0
+    ) {
+      setEditError("Total capacity must be greater than 0");
       return;
     }
 
@@ -88,19 +92,19 @@ function Venues() {
     setTotalSeats("");
     setVenueType("");
   };
-  useEffect(()=>{
-    fetchVenues()
-    console.log("fetched venues")
-  },[fetchVenues])
+  useEffect(() => {
+    fetchVenues();
+    console.log("fetched venues");
+  }, [fetchVenues]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-4 md:p-6">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Venue Management</h1>
-        <p className="text-gray-600">
-          Add, edit, and manage your venues below
-        </p>
+        <h1 className="text-3xl font-bold text-gray-800 mb-2">
+          Venue Management
+        </h1>
+        {/* <p className="text-gray-600">Add, edit, and manage your venues below</p> */}
       </div>
 
       {/* Main Content */}
@@ -134,8 +138,18 @@ function Venues() {
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400"
                   />
                   <div className="absolute right-3 top-3">
-                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    <svg
+                      className="w-5 h-5 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                      />
                     </svg>
                   </div>
                 </div>
@@ -156,9 +170,24 @@ function Venues() {
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400"
                   />
                   <div className="absolute right-3 top-3">
-                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <svg
+                      className="w-5 h-5 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
                     </svg>
                   </div>
                 </div>
@@ -177,11 +206,21 @@ function Venues() {
                     onChange={(e) => setTotalSeats(e.target.value)}
                     placeholder="Enter total capacity"
                     min="0"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400 appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                   />
-                  <div className="absolute right-3 top-3">
-                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-6A8.5 8.5 0 0012 3.5 8.5 8.5 0 003.5 12v6.5h17V12z" />
+                  <div className="absolute right-3 top-3.5">
+                    <svg
+                      className="w-5 h-5 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+                      />
                     </svg>
                   </div>
                 </div>
@@ -202,8 +241,18 @@ function Venues() {
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald500 outline-none transition-all duration-300 hover:border-gray-400"
                   />
                   <div className="absolute right-3 top-3">
-                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    <svg
+                      className="w-5 h-5 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                      />
                     </svg>
                   </div>
                 </div>
@@ -237,9 +286,11 @@ function Venues() {
             <div className="mb-6">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                  <h2 className="text-xl font-bold text-gray-800">Saved Venues</h2>
+                  <h2 className="text-xl font-bold text-gray-800">
+                    Saved Venues
+                  </h2>
                   <p className="text-gray-600 mt-1">
-                    {venues.length} venue{venues.length !== 1 ? 's' : ''} found
+                    {venues.length} venue{venues.length !== 1 ? "s" : ""} found
                   </p>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -249,8 +300,18 @@ function Venues() {
                       placeholder="Search venues..."
                       className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
                     />
-                    <svg className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    <svg
+                      className="absolute left-3 top-2.5 w-5 h-5 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                      />
                     </svg>
                   </div>
                 </div>
@@ -266,18 +327,18 @@ function Venues() {
                       #
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                      Name
+                      Venue Name
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                       Location
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                      Type
+                      Venue Type
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                       Seats
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider text-center">
+                    <th className="px-6 py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider text-center">
                       Actions
                     </th>
                   </tr>
@@ -285,7 +346,10 @@ function Venues() {
 
                 <tbody className="bg-white divide-y divide-gray-200">
                   {venues.map((venue, index) => (
-                    <tr key={venue.id} className="hover:bg-gray-50 transition-colors duration-200">
+                    <tr
+                      key={venue.id}
+                      className="hover:bg-gray-50 transition-colors duration-200"
+                    >
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                         {index + 1}
                       </td>
@@ -298,7 +362,10 @@ function Venues() {
                               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
                               value={editData.name || ""}
                               onChange={(e) =>
-                                setEditData({ ...editData, name: e.target.value })
+                                setEditData({
+                                  ...editData,
+                                  name: e.target.value,
+                                })
                               }
                             />
                           </td>
@@ -307,7 +374,10 @@ function Venues() {
                               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
                               value={editData.location || ""}
                               onChange={(e) =>
-                                setEditData({ ...editData, location: e.target.value })
+                                setEditData({
+                                  ...editData,
+                                  location: e.target.value,
+                                })
                               }
                             />
                           </td>
@@ -316,7 +386,10 @@ function Venues() {
                               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
                               value={editData.venue_type || ""}
                               onChange={(e) =>
-                                setEditData({ ...editData, venue_type: e.target.value })
+                                setEditData({
+                                  ...editData,
+                                  venue_type: e.target.value,
+                                })
                               }
                             />
                           </td>
@@ -326,7 +399,10 @@ function Venues() {
                               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
                               value={editData.total_capacity || ""}
                               onChange={(e) =>
-                                setEditData({ ...editData, total_capacity: e.target.value })
+                                setEditData({
+                                  ...editData,
+                                  total_capacity: e.target.value,
+                                })
                               }
                             />
                           </td>
@@ -334,15 +410,46 @@ function Venues() {
                             <div className="flex justify-center space-x-2">
                               <button
                                 onClick={() => saveEdit(venue.id)}
-                                className="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors text-sm font-medium"
+                                className="group flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-lg hover:from-emerald-600 hover:to-emerald-700 transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5"
                               >
-                                Save
+                                <svg
+                                  className="w-4 h-4 group-hover:scale-110 transition-transform"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M5 13l4 4L19 7"
+                                  />
+                                </svg>
+                                <span className="text-sm font-medium">
+                                  Save
+                                </span>
                               </button>
+
                               <button
                                 onClick={() => setEditingId(null)}
-                                className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors text-sm font-medium"
+                                className="group flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5"
                               >
-                                Cancel
+                                <svg
+                                  className="w-4 h-4 group-hover:scale-110 transition-transform"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M6 18L18 6M6 6l12 12"
+                                  />
+                                </svg>
+                                <span className="text-sm font-medium">
+                                  Cancel
+                                </span>
                               </button>
                             </div>
                           </td>
@@ -353,11 +460,23 @@ function Venues() {
                           <td className="px-6 py-4">
                             <div className="flex items-center">
                               <div className="w-8 h-8 bg-gradient-to-r from-emerald-100 to-blue-100 rounded-lg flex items-center justify-center mr-3">
-                                <svg className="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                <svg
+                                  className="w-4 h-4 text-emerald-600"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                                  />
                                 </svg>
                               </div>
-                              <span className="font-medium text-gray-900">{venue.name}</span>
+                              <span className="font-medium text-gray-900">
+                                {venue.name}
+                              </span>
                             </div>
                           </td>
                           <td className="px-6 py-4 text-sm text-gray-700">
@@ -370,23 +489,61 @@ function Venues() {
                           </td>
                           <td className="px-6 py-4">
                             <div className="flex items-center">
-                              <span className="text-lg font-semibold text-gray-900">{venue.total_capacity}</span>
-                              <span className="ml-1 text-sm text-gray-500">seats</span>
+                              <span className="text-lg font-semibold text-gray-900">
+                                {venue.total_capacity}
+                              </span>
+                              <span className="ml-1 text-sm text-gray-500">
+                                seats
+                              </span>
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex justify-center space-x-2">
                               <button
                                 onClick={() => startEdit(venue)}
-                                className="px-4 py-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors text-sm font-medium"
+                                className="group p-2 bg-gradient-to-r from-blue-50 to-blue-100 text-blue-600 rounded-lg hover:from-blue-100 hover:to-blue-200 transition-all duration-200 hover:shadow-md"
+                                title="Edit venue"
                               >
-                                Edit
+                                <svg
+                                  className="w-5 h-5 group-hover:scale-110 transition-transform"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                  />
+                                </svg>
                               </button>
                               <button
-                                onClick={() => deleteVenue(venue.id)}
-                                className="px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors text-sm font-medium"
+                                onClick={() => {
+                                  if (
+                                    window.confirm(
+                                      "Are you sure you want to delete this venue?"
+                                    )
+                                  ) {
+                                    deleteVenue(venue.id);
+                                  }
+                                }}
+                                className="group p-2 bg-gradient-to-r from-red-50 to-red-100 text-red-600 rounded-lg hover:from-red-100 hover:to-red-200 transition-all duration-200 hover:shadow-md"
+                                title="Delete venue"
                               >
-                                Delete
+                                <svg
+                                  className="w-5 h-5 group-hover:scale-110 transition-transform"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                  />
+                                </svg>
                               </button>
                             </div>
                           </td>
@@ -399,11 +556,23 @@ function Venues() {
 
               {venues.length === 0 && (
                 <div className="text-center py-12">
-                  <svg className="w-16 h-16 text-gray-300 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  <svg
+                    className="w-16 h-16 text-gray-300 mx-auto mb-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1}
+                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                    />
                   </svg>
                   <p className="text-gray-500">No venues added yet</p>
-                  <p className="text-gray-400 text-sm mt-1">Add your first venue using the form</p>
+                  <p className="text-gray-400 text-sm mt-1">
+                    Add your first venue using the form
+                  </p>
                 </div>
               )}
             </div>
