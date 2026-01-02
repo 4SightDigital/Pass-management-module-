@@ -20,11 +20,17 @@ function Sidebar({ isOpen, onClose }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   
   // Auto-close sidebar on mobile when route changes
+  // useEffect(() => {
+  //   if (isOpen) {
+  //     onClose();
+  //   }
+  // }, [location.pathname, onClose, isOpen]);
+
   useEffect(() => {
-    if (isOpen) {
-      onClose();
-    }
-  }, [location.pathname, onClose, isOpen]);
+  if (isOpen && window.innerWidth < 768) { // mobile only
+    onClose();
+  }
+}, [location.pathname]);
   
   // Close sidebar on Escape key press
   useEffect(() => {
@@ -61,12 +67,12 @@ function Sidebar({ isOpen, onClose }) {
           shadow-lg md:shadow-sm`}
       >
         {/* Close button for mobile */}
-        <button
+        {/* <button
           onClick={onClose}
           className="absolute -right-12 top-4 md:hidden p-2 bg-white rounded-full shadow-lg hover:bg-gray-100 transition-colors"
         >
           <X className="w-5 h-5" />
-        </button>
+        </button> */}
 
         {/* Collapse Toggle Button (Desktop only) */}
         <button
