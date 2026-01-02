@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { createVenue, deleteVenue, updateVenue } from "../api/venues.api";
+import { createVenue, deleteVenue, getVenues, updateVenue } from "../api/venues.api";
 import { getVenueHierarchy, saveVenueHierarchy } from "../api/category.api";
 import { createEvent } from "../api/events.api";
 
@@ -12,11 +12,13 @@ const useVenueStore = create((set) => ({
     try {
       set({ loading: true });
       const res = await getVenues();
+      console.log("venues data from the api",res.data)
       set({
         venues: res.data.map((v) => ({ ...v, seating: [] })),
         loading: false,
       });
-    } catch {
+    } catch(err) {
+      console.log("error", err)
       set({ error: "Failed to load venues", loading: false });
     }
   },

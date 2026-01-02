@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import useVenueStore from "../store/useVenueStore";
 import AddCategory from "../components/AddCategory";
 import AddSubCategory from "../components/AddSubCategory";
@@ -14,7 +14,7 @@ function Venues() {
     loading,
     error,
   } = useVenueStore();
-  console.log("i am venues", venues);
+  // console.log("i am venues", venues);
 
   const [name, setName] = useState("");
   const [location, setLocation] = useState("");
@@ -60,6 +60,21 @@ function Venues() {
       return;
     }
 
+    if (!editData.location?.trim()) {
+      setEditError("Location is required");
+      return;
+    }
+
+    if (!editData.venue_type?.trim()) {
+      setEditError("Venue Type is required");
+      return;
+    }
+
+     if (!editData.total_capacity?.trim()) {
+      setEditError("Total Seats is required");
+      return;
+    }
+
     updateVenue(id, editData);
     setEditingId(null);
     console.log(editData);
@@ -73,6 +88,10 @@ function Venues() {
     setTotalSeats("");
     setVenueType("");
   };
+  useEffect(()=>{
+    fetchVenues()
+    console.log("fetched venues")
+  },[fetchVenues])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-4 md:p-6">
@@ -148,12 +167,13 @@ function Venues() {
               {/* Total Seats */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Total Seats
+                  Total Seats *
                 </label>
                 <div className="relative">
                   <input
                     type="number"
                     value={totalSeats}
+                    required
                     onChange={(e) => setTotalSeats(e.target.value)}
                     placeholder="Enter total capacity"
                     min="0"
@@ -170,12 +190,13 @@ function Venues() {
               {/* Venue Type */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Venue Type
+                  Venue Type *
                 </label>
                 <div className="relative">
                   <input
                     type="text"
                     value={venueType}
+                    required
                     onChange={(e) => setVenueType(e.target.value)}
                     placeholder="e.g., Conference Hall, Stadium, Theater"
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald500 outline-none transition-all duration-300 hover:border-gray-400"
