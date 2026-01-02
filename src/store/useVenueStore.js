@@ -24,6 +24,7 @@ const useVenueStore = create((set) => ({
   addVenue: async (venueData) => {
     try {
       set({ loading: true, error: null });
+      console.log("API BASE URL:", import.meta.env.VITE_API_BASE_URL);
 
       const res = await createVenue(venueData);
 
