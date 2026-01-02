@@ -47,7 +47,7 @@ function App() {
                   src={logo}
                   alt="company logo"
                   className="h-12 w-auto object-contain"
-                />
+                /> 
               </div>
 
               {/* Placeholder for future mobile actions */}
