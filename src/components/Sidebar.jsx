@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import logo from "../assets/company-logo.webp";
 import { 
   Home, 
   Calendar, 
@@ -81,12 +82,13 @@ function Sidebar({ isOpen, onClose }) {
             <div className={`flex items-center ${isCollapsed ? "justify-center" : "justify-between"}`}>
               {!isCollapsed && (
                 <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-lg flex items-center justify-center">
-                    {/* <Ticket className="w-5 h-5 text-white" /> */}
+                  {/* <div className="w-8 h-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-lg flex items-center justify-center">
+                    <Ticket className="w-5 h-5 text-white" />
                   </div>
                   <h2 className="text-xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
                     FORESIGHT DIGITAL
-                  </h2>
+                  </h2> */}
+                  <img src={logo} alt="" />
                 </div>
               )}
               {isCollapsed && (
