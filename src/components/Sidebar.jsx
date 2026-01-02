@@ -82,7 +82,7 @@ function Sidebar({ isOpen, onClose }) {
               {!isCollapsed && (
                 <div className="flex items-center space-x-2">
                   <div className="w-8 h-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-lg flex items-center justify-center">
-                    <Ticket className="w-5 h-5 text-white" />
+                    {/* <Ticket className="w-5 h-5 text-white" /> */}
                   </div>
                   <h2 className="text-xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
                     FORESIGHT DIGITAL
