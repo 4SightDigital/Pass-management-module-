@@ -15,3 +15,7 @@ export const convertFileToBase64 = (file) => {
     reader.readAsDataURL(file)
   });
 };
+
+export const toIso = (localDateTime) => {
+    return new Date(localDateTime).toISOString();
+}

@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { createVenue, deleteVenue, getVenues, updateVenue } from "../api/venues.api";
 import { getVenueHierarchy, saveVenueHierarchy } from "../api/category.api";
-import { createEvent } from "../api/events.api";
+import { createEvent, getEvents } from "../api/events.api";
 
 const useVenueStore = create((set) => ({
   venues: [],events: [],
@@ -14,7 +14,7 @@ const useVenueStore = create((set) => ({
       const res = await getVenues();
       console.log("venues data from the api",res.data)
       set({
-        venues: res.data.map((v) => ({ ...v, seating: [] })),
+        venues: res.data.map((v) => ({ ...v })),
         loading: false,
       });
     } catch(err) {
@@ -22,7 +22,19 @@ const useVenueStore = create((set) => ({
       set({ error: "Failed to load venues", loading: false });
     }
   },
-
+fetchEvents: async () => {
+  try {
+      set({ loading: true });
+      const res = await getEvents();
+      console.log("events data", res.data)
+      set({
+        events: res.data.map((e) => ({...e}))
+      })
+  } catch (error) {
+    console.log("error in fetching events", error)
+  }
+}
+,
   addVenue: async (venueData) => {
     try {
       set({ loading: true, error: null });
@@ -54,7 +66,9 @@ const useVenueStore = create((set) => ({
         events: [...state.events,{...res.data},
         ],
       }));
-    } catch (error) {}
+    } catch (error) {
+      console.log("error in adding event", error)
+    }
   },
   deleteVenue: async (id) => {
     await deleteVenue(id);

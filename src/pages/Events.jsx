@@ -1,25 +1,29 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import useVenueStore from "../store/useVenueStore";
 import { useNavigate } from "react-router-dom";
+import { toIso } from "../utils/fileUtils";
+import SearchBar from "../components/search/SearchBar";
 
 const Events = () => {
   const venues = useVenueStore((state) => state.venues);
   const events = useVenueStore((state) => state.events);
   const addEvent = useVenueStore((state) => state.addEvent);
-
+  const fetchEvents = useVenueStore((state)=> state.fetchEvents)
   const [eventName, setEventName] = useState("");
   const [venueIndex, setVenueIndex] = useState("");
-  const [eventStatus, setEventStatus] = useState("");
+  // const [eventStatus, setEventStatus] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
+    const [filteredEvents, setFilteredEvents] = useState(events);
+  
 
   const today = new Date().toISOString().split("T")[0];
 
   const resetEventData = () => {
     setEventName("");
     setVenueIndex("");
-    setEventStatus("");
+    // setEventStatus("");
     setStartTime("");
     setEndTime("");
   };
@@ -38,20 +42,24 @@ const Events = () => {
     }
 
     const selectedVenue = venues[venueIndex];
-
+    const backendFormatStarttime= toIso(startTime)
+    const backendFormatEndtime = toIso(endTime)
+    console.log("backendFormatStarttime",backendFormatStarttime)
     addEvent({
       
       name: eventName,
-      venue: selectedVenue.name,
-      status: eventStatus,
-      start_datetime:startTime,
-      end_datetime:endTime,
+      venue: selectedVenue.id,
+      // status: eventStatus,
+      start_datetime:backendFormatStarttime,
+      end_datetime:backendFormatEndtime,
     });
 
     resetEventData();
   };
   const navigate = useNavigate();
-
+  useEffect(()=> {
+    fetchEvents()
+  },[])
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-4 md:p-6">
       {/* Page Header */}
@@ -171,15 +179,15 @@ const Events = () => {
                 </div>
 
                 {/* Event Status */}
-                <div>
+                {/* <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Event Status
                   </label>
                   <div className="relative">
                     <input
                       type="text"
-                      value={eventStatus}
-                      onChange={(e) => setEventStatus(e.target.value)}
+                      // value={eventStatus}
+                      // onChange={(e) => setEventStatus(e.target.value)}
                       placeholder="e.g., Upcoming, Live, Completed"
                       className="w-full px-4 py-3 pl-11 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400"
                     />
@@ -189,7 +197,7 @@ const Events = () => {
                       </svg>
                     </div>
                   </div>
-                </div>
+                </div> */}
 
                 {/* Date Range */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -271,16 +279,16 @@ const Events = () => {
                       {events.length} event{events.length !== 1 ? 's' : ''} created
                     </p>
                   </div>
+                    {console.log("Sample event:", events[0])}
+
                   <div className="flex items-center space-x-3">
                     <div className="relative">
-                      <input
-                        type="text"
-                        placeholder="Search events..."
-                        className="pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none w-full sm:w-64"
-                      />
-                      <svg className="absolute left-3 top-3 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                      </svg>
+                      <SearchBar
+                    data={events}
+                    searchKeys={["name", "venue_name"]}
+                    // placeholder="deep search"
+                    onSearch={(results) => setFilteredEvents(results)}
+                  />
                     </div>
                   </div>
                 </div>
@@ -300,9 +308,9 @@ const Events = () => {
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                         Venue
                       </th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      {/* <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                         Status
-                      </th>
+                      </th> */}
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                         Date Range
                       </th>
@@ -313,6 +321,7 @@ const Events = () => {
                   </thead>
 
                   <tbody className="bg-white divide-y divide-gray-200">
+                    {console.log("eventsssssssssss",events)}
                     {events.length === 0 ? (
                       <tr>
                         <td colSpan="6" className="px-6 py-16 text-center">
@@ -328,8 +337,10 @@ const Events = () => {
                         </td>
                       </tr>
                     ) : (
-                      events.map((event, index) => (
+                      filteredEvents.map((event, index) => (
+                        
                         <tr key={event.id} className="hover:bg-gray-50 transition-colors duration-200">
+                          {console.log("event,event", event)}
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm font-medium text-gray-900 bg-gray-100 w-8 h-8 rounded-lg flex items-center justify-center">
                               {index + 1}
@@ -348,9 +359,9 @@ const Events = () => {
                             </div>
                           </td>
                           <td className="px-6 py-4">
-                            <div className="text-sm text-gray-900">{event.venueName}</div>
+                            <div className="text-sm text-gray-900">{event.venue_name}</div>
                           </td>
-                          <td className="px-6 py-4">
+                          {/* <td className="px-6 py-4">
                             <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
                               event.status?.toLowerCase() === 'completed' 
                                 ? 'bg-red-100 text-red-800'
@@ -360,11 +371,11 @@ const Events = () => {
                             }`}>
                               {event.status || "Upcoming"}
                             </span>
-                          </td>
+                          </td> */}
                           <td className="px-6 py-4">
                             <div className="text-sm text-gray-900">
-                              <div className="font-medium">{event.startTime}</div>
-                              <div className="text-gray-500 text-xs">to {event.endTime}</div>
+                              <div className="font-medium">{event.start_datetime}</div>
+                              <div className="text-gray-500 text-xs">to {event.end_datetime}</div>
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
