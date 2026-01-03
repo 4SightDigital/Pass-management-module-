@@ -1,8 +1,10 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import useVenueStore from "../store/useVenueStore";
 import AddCategory from "../components/AddCategory";
 import AddSubCategory from "../components/AddSubCategory";
+import { convertFileToBase64 } from "../utils/fileUtils";
+import SearchBar from "../components/search/SearchBar";
 
 function Venues() {
   const {
@@ -25,6 +27,13 @@ function Venues() {
   const [editData, setEditData] = useState({});
   const [editError, setEditError] = useState("");
 
+  const [venueImg, setVenueImg] = useState(null);
+  const [filteredVenues, setFilteredVenues] = useState(venues);
+  const [searchTerm, setSearchTerm] = useState("");
+  const fileInputRef = useRef(null);
+
+  // const filteredVenues = venues.filter()
+
   const handleAddVenue = async (e) => {
     e.preventDefault();
 
@@ -42,6 +51,15 @@ function Venues() {
       console.log("error", error?.response?.data || error);
       alert("Failed to add venue");
     }
+  };
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const base64 = await convertFileToBase64(file);
+    setVenueImg(base64);
+    console.log("imgggg", base64);
   };
 
   const startEdit = (venue) => {
@@ -91,6 +109,11 @@ function Venues() {
     setLocation("");
     setTotalSeats("");
     setVenueType("");
+    setVenueImg(null);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
   useEffect(() => {
     fetchVenues();
@@ -200,10 +223,19 @@ function Venues() {
                 </label>
                 <div className="relative">
                   <input
-                    type="number"
+                    type="text"
                     value={totalSeats}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (/^\d*$/.test(value)) {
+                        // allow only digits
+                        setTotalSeats(value);
+                      }
+                    }}
+                    // type="number"
+                    // value={totalSeats}
                     required
-                    onChange={(e) => setTotalSeats(e.target.value)}
+                    // onChange={(e) => setTotalSeats(e.target.value)}
                     placeholder="Enter total capacity"
                     min="0"
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400 appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
@@ -258,6 +290,47 @@ function Venues() {
                 </div>
               </div>
 
+              {/* image Upload */}
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Upload Venue Image *
+                </label>
+                <div className="relative">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    required
+                    className="text-gray-400 w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400 cursor-pointer bg-white file:mr-4 file:py-0 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100"
+                    ref={fileInputRef}
+                    onChange={handleImageUpload}
+                  />
+
+                  <div className="absolute right-4 top-3.5 pointer-events-none">
+                    <svg
+                      className="w-4 h-4 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Optional: File name display */}
+                {venueImg && (
+                  <p className="mt-1 text-xs text-emerald-600 truncate">
+                    {venueImg.name}
+                  </p>
+                )}
+              </div>
+
               {/* Buttons */}
               <div className="pt-4 grid grid-cols-2 gap-4">
                 <button
@@ -294,26 +367,12 @@ function Venues() {
                   </p>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <div className="relative">
-                    <input
-                      type="text"
-                      placeholder="Search venues..."
-                      className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
-                    />
-                    <svg
-                      className="absolute left-3 top-2.5 w-5 h-5 text-gray-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                      />
-                    </svg>
-                  </div>
+                  <SearchBar
+                    data={venues}
+                    searchKeys={["name", "location"]}
+                    // placeholder="deep search"
+                    onSearch={(results) => setFilteredVenues(results)}
+                  />
                 </div>
               </div>
             </div>
@@ -345,7 +404,7 @@ function Venues() {
                 </thead>
 
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {venues.map((venue, index) => (
+                  {filteredVenues.map((venue, index) => (
                     <tr
                       key={venue.id}
                       className="hover:bg-gray-50 transition-colors duration-200"

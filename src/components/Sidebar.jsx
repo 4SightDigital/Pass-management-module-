@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import logo from "../assets/company-logo.webp";
+import logoDesign from "../assets/logoDesign.PNG"
 import { 
   Home, 
   Calendar, 
@@ -98,8 +99,9 @@ function Sidebar({ isOpen, onClose }) {
                 </div>
               )}
               {isCollapsed && (
-                <div className="w-8 h-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-lg flex items-center justify-center">
-                  <Ticket className="w-5 h-5 text-white" />
+                <div className="w-8 h-8 flex items-center justify-center">
+                  {/* <Ticket className="w-5 h-5 text-white" /> */}
+                  <img src={logoDesign} alt="logo" />
                 </div>
               )}
             </div>
