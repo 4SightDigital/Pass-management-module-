@@ -25,3 +25,11 @@ export const formatDateTimeSimple = (datetimeString) => {
   if (!datetimeString) return '';
   return datetimeString.replace('T', ' ').replace('Z', '').slice(0, -3);
 };
+
+
+export const fromIso = (isoString) => {
+  if (!isoString) return '';
+  const date = new Date(isoString);
+  const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return localDate.toISOString().slice(0, 16);
+};

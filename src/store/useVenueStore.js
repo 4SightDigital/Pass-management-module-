@@ -1,10 +1,16 @@
 import { create } from "zustand";
-import { createVenue, deleteVenue, getVenues, updateVenue } from "../api/venues.api";
+import {
+  createVenue,
+  deleteVenue,
+  getVenues,
+  updateVenue,
+} from "../api/venues.api";
 import { getVenueHierarchy, saveVenueHierarchy } from "../api/category.api";
-import { createEvent, getEvents } from "../api/events.api";
+import { createEvent, deleteEvent, getEvents, updateEvent } from "../api/events.api";
 
 const useVenueStore = create((set) => ({
-  venues: [],events: [],
+  venues: [],
+  events: [],
   loading: false,
   error: null,
 
@@ -12,29 +18,16 @@ const useVenueStore = create((set) => ({
     try {
       set({ loading: true });
       const res = await getVenues();
-      console.log("venues data from the api",res.data)
+      console.log("venues data from the api", res.data);
       set({
         venues: res.data.map((v) => ({ ...v })),
         loading: false,
       });
-    } catch(err) {
-      console.log("error", err)
+    } catch (err) {
+      console.log("error", err);
       set({ error: "Failed to load venues", loading: false });
     }
   },
-fetchEvents: async () => {
-  try {
-      set({ loading: true });
-      const res = await getEvents();
-      console.log("events data", res.data)
-      set({
-        events: res.data.map((e) => ({...e}))
-      })
-  } catch (error) {
-    console.log("error in fetching events", error)
-  }
-}
-,
   addVenue: async (venueData) => {
     try {
       set({ loading: true, error: null });
@@ -56,20 +49,6 @@ fetchEvents: async () => {
       throw err; // important so UI can react
     }
   },
-  addEvent: async (event) => {
-    try {
-      set({ loading: true, error: null });
-
-      const res = await createEvent(event);
-
-      set((state) => ({
-        events: [...state.events,{...res.data},
-        ],
-      }));
-    } catch (error) {
-      console.log("error in adding event", error)
-    }
-  },
   deleteVenue: async (id) => {
     await deleteVenue(id);
     set((state) => ({
@@ -77,6 +56,31 @@ fetchEvents: async () => {
     }));
   },
 
+  addEvent: async (event) => {
+    try {
+      set({ loading: true, error: null });
+
+      const res = await createEvent(event);
+
+      set((state) => ({
+        events: [...state.events, { ...res.data }],
+      }));
+    } catch (error) {
+      console.log("error in adding event", error);
+    }
+  },
+  fetchEvents: async () => {
+    try {
+      set({ loading: true });
+      const res = await getEvents();
+      console.log("events data", res.data);
+      set({
+        events: res.data.map((e) => ({ ...e })),
+      });
+    } catch (error) {
+      console.log("error in fetching events", error);
+    }
+  },
   updateVenue: async (id, data) => {
     const res = await updateVenue(id, data);
     set((state) => ({
@@ -85,7 +89,21 @@ fetchEvents: async () => {
       ),
     }));
   },
-
+  updateEvent: async (id, data) => {
+    const res = await updateEvent(id, data);
+    set((state) => ({
+      events: state.events.map((eve)=>
+      eve.id === id ? {...eve, ...res.data}: eve)
+    }))
+  }
+  ,
+  deleteEvent: async (id) => {
+    await deleteEvent(id)
+    set((state)=> ({
+     events: state.events.filter((eve) => eve.id !== id)
+    }))
+  }
+  ,
   // categories of venues
 
   fetchVenueHierarchy: async (venueId) => {
@@ -189,8 +207,6 @@ fetchEvents: async () => {
   },
 
   // EVENTS    slice begins hereee=============================================
-
-  
 }));
 
 export default useVenueStore;

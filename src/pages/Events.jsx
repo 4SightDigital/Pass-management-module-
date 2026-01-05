@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import useVenueStore from "../store/useVenueStore";
 import { useNavigate } from "react-router-dom";
-import { formatDateTimeSimple, toIso } from "../utils/fileUtils";
+import { formatDateTimeSimple, toIso, fromIso } from "../utils/fileUtils";
 import SearchBar from "../components/search/SearchBar";
 
 const Events = () => {
@@ -10,19 +10,29 @@ const Events = () => {
   const events = useVenueStore((state) => state.events);
   const addEvent = useVenueStore((state) => state.addEvent);
   const fetchEvents = useVenueStore((state) => state.fetchEvents);
+  const updateEvent = useVenueStore((state) => state.updateEvent);
+  const deleteEvent = useVenueStore((state) => state.deleteEvent);
+  
   const [eventName, setEventName] = useState("");
   const [venueIndex, setVenueIndex] = useState("");
-  // const [eventStatus, setEventStatus] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [filteredEvents, setFilteredEvents] = useState(events);
+
+  const [eventEditingId, setEventEditingId] = useState(null);
+  const [eventEditData, setEventEditData] = useState({
+    name: "",
+    venue: "",
+    start_datetime: "",
+    end_datetime: ""
+  });
+  const [eventEditError, setEventEditError] = useState("");
 
   const today = new Date().toISOString().split("T")[0];
 
   const resetEventData = () => {
     setEventName("");
     setVenueIndex("");
-    // setEventStatus("");
     setStartTime("");
     setEndTime("");
   };
@@ -43,21 +53,106 @@ const Events = () => {
     const selectedVenue = venues[venueIndex];
     const backendFormatStarttime = toIso(startTime);
     const backendFormatEndtime = toIso(endTime);
-    console.log("backendFormatStarttime", backendFormatStarttime);
+    
     addEvent({
       name: eventName,
       venue: selectedVenue.id,
-      // status: eventStatus,
       start_datetime: backendFormatStarttime,
       end_datetime: backendFormatEndtime,
     });
 
     resetEventData();
   };
+
   const navigate = useNavigate();
+  
   useEffect(() => {
     fetchEvents();
   }, []);
+
+  useEffect(() => {
+    setFilteredEvents(events);
+  }, [events]);
+
+  const startEventEdit = (event) => {
+    setEventEditingId(event.id);
+    setEventEditData({
+      name: event.name,
+      venue: event.venue,
+      start_datetime: fromIso(event.start_datetime),
+      end_datetime: fromIso(event.end_datetime),
+    });
+  };
+
+  const cancelEventEdit = () => {
+    setEventEditingId(null);
+    setEventEditData({
+      name: "",
+      venue: "",
+      start_datetime: "",
+      end_datetime: ""
+    });
+    setEventEditError("");
+  };
+
+  const saveEventEdit = async () => {
+    try {
+      // Validation
+      if (!eventEditData.name.trim()) {
+        setEventEditError("Event name is required");
+        return;
+      }
+
+      if (!eventEditData.venue) {
+        setEventEditError("Venue is required");
+        return;
+      }
+
+      if (!eventEditData.start_datetime) {
+        setEventEditError("Start date is required");
+        return;
+      }
+
+      if (!eventEditData.end_datetime) {
+        setEventEditError("End date is required");
+        return;
+      }
+
+      if (new Date(eventEditData.end_datetime) < new Date(eventEditData.start_datetime)) {
+        setEventEditError("End date cannot be before start date");
+        return;
+      }
+
+      // Format dates for backend
+      const updateData = {
+        ...eventEditData,
+        start_datetime: toIso(eventEditData.start_datetime),
+        end_datetime: toIso(eventEditData.end_datetime),
+      };
+
+      await updateEvent(eventEditingId, updateData);
+      
+      // Reset edit state
+      cancelEventEdit();
+      setEventEditError("");
+      
+    } catch (error) {
+      console.error("Failed to update event:", error);
+      setEventEditError("Failed to update event. Please try again.");
+    }
+  };
+
+  const handleDeleteEvent = async (eventId) => {
+    if (window.confirm("Are you sure you want to delete this event?")) {
+      try {
+        await deleteEvent(eventId);
+      } catch (error) {
+        console.error("Failed to delete event:", error);
+        alert("Failed to delete event. Please try again.");
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-4 md:p-6">
       {/* Page Header */}
@@ -234,27 +329,6 @@ const Events = () => {
                   </div>
                 </div>
 
-                {/* Event Status */}
-                {/* <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Event Status
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      // value={eventStatus}
-                      // onChange={(e) => setEventStatus(e.target.value)}
-                      placeholder="e.g., Upcoming, Live, Completed"
-                      className="w-full px-4 py-3 pl-11 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400"
-                    />
-                    <div className="absolute left-3 top-3.5">
-                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                  </div>
-                </div> */}
-
                 {/* Date Range */}
                 <div className="grid grid-cols-1 gap-4">
                   {/* Start Date */}
@@ -267,7 +341,6 @@ const Events = () => {
                         type="datetime-local"
                         value={startTime}
                         min={today}
-
                         onChange={(e) => setStartTime(e.target.value)}
                         required
                         className="w-full px-4 py-3 pl-11 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400"
@@ -359,20 +432,30 @@ const Events = () => {
                       created
                     </p>
                   </div>
-                  {console.log("Sample event:", events[0])}
 
                   <div className="flex items-center space-x-3">
                     <div className="relative">
                       <SearchBar
                         data={events}
                         searchKeys={["name", "venue_name"]}
-                        // placeholder="deep search"
                         onSearch={(results) => setFilteredEvents(results)}
                       />
                     </div>
                   </div>
                 </div>
               </div>
+
+              {/* Error Message Display */}
+              {eventEditError && (
+                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl">
+                  <div className="flex items-center">
+                    <svg className="w-5 h-5 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className="text-red-700 font-medium">{eventEditError}</span>
+                  </div>
+                </div>
+              )}
 
               {/* Events Table */}
               <div className="overflow-x-auto rounded-xl border border-gray-200">
@@ -383,14 +466,11 @@ const Events = () => {
                         #
                       </th>
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                        Event
+                        Event Name
                       </th>
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                        Venue
+                        Venue Name
                       </th>
-                      {/* <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                        Status
-                      </th> */}
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                         Date Range
                       </th>
@@ -401,10 +481,9 @@ const Events = () => {
                   </thead>
 
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {console.log("eventsssssssssss", events)}
                     {events.length === 0 ? (
                       <tr>
-                        <td colSpan="6" className="px-6 py-16 text-center">
+                        <td colSpan="5" className="px-6 py-16 text-center">
                           <div className="flex flex-col items-center">
                             <div className="w-16 h-16 bg-gradient-to-r from-emerald-100 to-blue-100 rounded-2xl flex items-center justify-center mb-4">
                               <svg
@@ -436,72 +515,222 @@ const Events = () => {
                           key={event.id}
                           className="hover:bg-gray-50 transition-colors duration-200"
                         >
-                          {console.log("event,event", event)}
+                          {/* Row Number */}
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm font-medium text-gray-900 bg-gray-100 w-8 h-8 rounded-lg flex items-center justify-center">
                               {index + 1}
                             </div>
                           </td>
-                          <td className="px-6 py-4">
-                            <div className="flex items-center">
-                              <div className="w-10 h-10 bg-gradient-to-r from-emerald-100 to-blue-100 rounded-xl flex items-center justify-center mr-3">
-                                <svg
-                                  className="w-5 h-5 text-emerald-600"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
+
+                          {/* Edit Mode or View Mode */}
+                          {eventEditingId === event.id ? (
+                            // EDIT MODE
+                            <>
+                              <td className="px-6 py-4">
+                                <input
+                                  type="text"
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                                  value={eventEditData.name || ""}
+                                  onChange={(e) =>
+                                    setEventEditData({
+                                      ...eventEditData,
+                                      name: e.target.value,
+                                    })
+                                  }
+                                  required
+                                />
+                              </td>
+                              <td className="px-6 py-4">
+                                <select
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                                  value={eventEditData.venue || ""}
+                                  onChange={(e) =>
+                                    setEventEditData({
+                                      ...eventEditData,
+                                      venue: e.target.value,
+                                    })
+                                  }
+                                  required
                                 >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                  <option value="">Select Venue</option>
+                                  {venues.map((venue) => (
+                                    <option key={venue.id} value={venue.id}>
+                                      {venue.name}
+                                    </option>
+                                  ))}
+                                </select>
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="space-y-2">
+                                  <input
+                                    type="datetime-local"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                                    value={eventEditData.start_datetime || ""}
+                                    onChange={(e) =>
+                                      setEventEditData({
+                                        ...eventEditData,
+                                        start_datetime: e.target.value,
+                                      })
+                                    }
+                                    required
                                   />
-                                </svg>
-                              </div>
-                              <div>
-                                <div className="font-medium text-gray-900">
-                                  {event.name}
+                                  <input
+                                    type="datetime-local"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                                    value={eventEditData.end_datetime || ""}
+                                    min={eventEditData.start_datetime || ""}
+                                    onChange={(e) =>
+                                      setEventEditData({
+                                        ...eventEditData,
+                                        end_datetime: e.target.value,
+                                      })
+                                    }
+                                    required
+                                  />
                                 </div>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="text-sm text-gray-900">
-                              {event.venue_name}
-                            </div>
-                          </td>
-                          {/* <td className="px-6 py-4">
-                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                              event.status?.toLowerCase() === 'completed' 
-                                ? 'bg-red-100 text-red-800'
-                                : event.status?.toLowerCase() === 'upcoming'
-                                ? 'bg-blue-100 text-blue-800'
-                                : 'bg-emerald-100 text-emerald-800'
-                            }`}>
-                              {event.status || "Upcoming"}
-                            </span>
-                          </td> */}
-                          <td className="px-6 py-4">
-                            <div className="text-sm text-gray-900">
-                              <div className="font-medium">
-                                {formatDateTimeSimple(event.start_datetime)}
-                              </div>
-                              <div className="text-gray-500 text-xs">
-                                to {formatDateTimeSimple(event.end_datetime)}
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <button
-                              onClick={() =>
-                                navigate(`/events/${event.id}/book`)
-                              }
-                              className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-blue-500 text-white rounded-xl hover:from-emerald-600 hover:to-blue-600 transition-all duration-300 text-sm font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-                            >
-                              Book Tickets
-                            </button>
-                          </td>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="flex justify-center space-x-2">
+                                  <button
+                                    onClick={saveEventEdit}
+                                    className="group flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-lg hover:from-emerald-600 hover:to-emerald-700 transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5"
+                                  >
+                                    <svg
+                                      className="w-4 h-4 group-hover:scale-110 transition-transform"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M5 13l4 4L19 7"
+                                      />
+                                    </svg>
+                                    <span className="text-sm font-medium">
+                                      Save
+                                    </span>
+                                  </button>
+
+                                  <button
+                                    onClick={cancelEventEdit}
+                                    className="group flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5"
+                                  >
+                                    <svg
+                                      className="w-4 h-4 group-hover:scale-110 transition-transform"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M6 18L18 6M6 6l12 12"
+                                      />
+                                    </svg>
+                                    <span className="text-sm font-medium">
+                                      Cancel
+                                    </span>
+                                  </button>
+                                </div>
+                              </td>
+                            </>
+                          ) : (
+                            // VIEW MODE
+                            <>
+                              <td className="px-6 py-4">
+                                <div className="flex items-center">
+                                  <div className="w-10 h-10 bg-gradient-to-r from-emerald-100 to-blue-100 rounded-xl flex items-center justify-center mr-3">
+                                    <svg
+                                      className="w-5 h-5 text-emerald-600"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                      />
+                                    </svg>
+                                  </div>
+                                  <div>
+                                    <div className="font-medium text-gray-900">
+                                      {event.name}
+                                    </div>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="text-sm text-gray-900">
+                                  {event.venue_name}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="text-sm text-gray-900">
+                                  <div className="font-medium">
+                                    {formatDateTimeSimple(event.start_datetime)}
+                                  </div>
+                                  <div className="text-gray-500 text-xs">
+                                    to {formatDateTimeSimple(event.end_datetime)}
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="flex items-center justify-center space-x-2">
+                                  <button
+                                    onClick={() => startEventEdit(event)}
+                                    className="group p-2 bg-gradient-to-r from-blue-50 to-blue-100 text-blue-600 rounded-lg hover:from-blue-100 hover:to-blue-200 transition-all duration-200 hover:shadow-md"
+                                    title="Edit event"
+                                  >
+                                    <svg
+                                      className="w-5 h-5 group-hover:scale-110 transition-transform"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                      />
+                                    </svg>
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteEvent(event.id)}
+                                    className="group p-2 bg-gradient-to-r from-red-50 to-red-100 text-red-600 rounded-lg hover:from-red-100 hover:to-red-200 transition-all duration-200 hover:shadow-md"
+                                    title="Delete event"
+                                  >
+                                    <svg
+                                      className="w-5 h-5 group-hover:scale-110 transition-transform"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                      />
+                                    </svg>
+                                  </button>
+                                  <button
+                                    onClick={() =>
+                                      navigate(`/events/${event.id}/book`)
+                                    }
+                                    className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-blue-500 text-white rounded-xl hover:from-emerald-600 hover:to-blue-600 transition-all duration-300 text-sm font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                                  >
+                                    Book Tickets
+                                  </button>
+                                </div>
+                              </td>
+                            </>
+                          )}
                         </tr>
                       ))
                     )}
@@ -509,7 +738,7 @@ const Events = () => {
                 </table>
               </div>
 
-              {/* Pagination (Optional) */}
+              {/* Pagination */}
               {events.length > 0 && (
                 <div className="mt-6 flex items-center justify-between">
                   <div className="text-sm text-gray-700">
