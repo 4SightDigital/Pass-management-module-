@@ -19,3 +19,9 @@ export const convertFileToBase64 = (file) => {
 export const toIso = (localDateTime) => {
     return new Date(localDateTime).toISOString();
 }
+
+
+export const formatDateTimeSimple = (datetimeString) => {
+  if (!datetimeString) return '';
+  return datetimeString.replace('T', ' ').replace('Z', '').slice(0, -3);
+};
