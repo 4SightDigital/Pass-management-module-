@@ -10,9 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@progress/kendo-react-dateinputs": "^13.2.0",
+    "@progress/kendo-react-intl": "^13.2.0",
+    "@progress/kendo-theme-default": "^12.3.0",
     "axios": "^1.13.2",
     "lucide-react": "^0.562.0",
     "react": "^19.2.0",
+    "react-datepicker": "^9.1.0",
     "react-dom": "^19.2.0",
     "react-icons": "^5.5.0",
     "react-router-dom": "^7.11.0",

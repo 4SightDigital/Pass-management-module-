@@ -22,9 +22,20 @@ export const toIso = (localDateTime) => {
 
 
 export const formatDateTimeSimple = (datetimeString) => {
-  if (!datetimeString) return '';
-  return datetimeString.replace('T', ' ').replace('Z', '').slice(0, -3);
+  if (!datetimeString) return "";
+
+  const date = new Date(datetimeString);
+
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+
+  return `${day}-${month}-${year} ${hours}:${minutes}`;
 };
+
 
 
 export const fromIso = (isoString) => {
@@ -32,4 +43,26 @@ export const fromIso = (isoString) => {
   const date = new Date(isoString);
   const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
   return localDate.toISOString().slice(0, 16);
+};
+
+// Helper functions to format date/time for display
+export const formatDateForDisplay = (dateTimeString) => {
+  if (!dateTimeString) return '';
+  const date = new Date(dateTimeString);
+  return date.toLocaleDateString('en-US', {
+    weekday: 'short',
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
+};
+
+export const formatTimeForDisplay = (dateTimeString) => {
+  if (!dateTimeString) return '';
+  const date = new Date(dateTimeString);
+  return date.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  });
 };

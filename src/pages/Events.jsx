@@ -5,6 +5,9 @@ import { useNavigate } from "react-router-dom";
 import { formatDateTimeSimple, toIso, fromIso } from "../utils/fileUtils";
 import SearchBar from "../components/search/SearchBar";
 
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+
 const Events = () => {
   const venues = useVenueStore((state) => state.venues);
   const events = useVenueStore((state) => state.events);
@@ -12,7 +15,7 @@ const Events = () => {
   const fetchEvents = useVenueStore((state) => state.fetchEvents);
   const updateEvent = useVenueStore((state) => state.updateEvent);
   const deleteEvent = useVenueStore((state) => state.deleteEvent);
-  
+
   const [eventName, setEventName] = useState("");
   const [venueIndex, setVenueIndex] = useState("");
   const [startTime, setStartTime] = useState("");
@@ -24,7 +27,7 @@ const Events = () => {
     name: "",
     venue: "",
     start_datetime: "",
-    end_datetime: ""
+    end_datetime: "",
   });
   const [eventEditError, setEventEditError] = useState("");
 
@@ -53,8 +56,9 @@ const Events = () => {
     const selectedVenue = venues[venueIndex];
     const backendFormatStarttime = toIso(startTime);
     const backendFormatEndtime = toIso(endTime);
-    
-    addEvent({
+
+    try {
+      addEvent({
       name: eventName,
       venue: selectedVenue.id,
       start_datetime: backendFormatStarttime,
@@ -62,10 +66,20 @@ const Events = () => {
     });
 
     resetEventData();
+      alert("Event added successfully");
+
+    } catch (error) {
+
+      console.log("error in adding event", error)
+      alert("Failed to add Event");
+
+    }
+
+    
   };
 
   const navigate = useNavigate();
-  
+
   useEffect(() => {
     fetchEvents();
   }, []);
@@ -90,7 +104,7 @@ const Events = () => {
       name: "",
       venue: "",
       start_datetime: "",
-      end_datetime: ""
+      end_datetime: "",
     });
     setEventEditError("");
   };
@@ -118,7 +132,10 @@ const Events = () => {
         return;
       }
 
-      if (new Date(eventEditData.end_datetime) < new Date(eventEditData.start_datetime)) {
+      if (
+        new Date(eventEditData.end_datetime) <
+        new Date(eventEditData.start_datetime)
+      ) {
         setEventEditError("End date cannot be before start date");
         return;
       }
@@ -131,11 +148,10 @@ const Events = () => {
       };
 
       await updateEvent(eventEditingId, updateData);
-      
+
       // Reset edit state
       cancelEventEdit();
       setEventEditError("");
-      
     } catch (error) {
       console.error("Failed to update event:", error);
       setEventEditError("Failed to update event. Please try again.");
@@ -224,6 +240,7 @@ const Events = () => {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* LEFT COLUMN — ADD EVENT FORM */}
+          
           <div className="lg:col-span-1">
             <div className="bg-white rounded-2xl shadow-xl p-6 sticky top-6">
               {/* Card Header */}
@@ -362,7 +379,7 @@ const Events = () => {
                       </div>
                     </div>
                   </div>
-
+                      
                   {/* End Date */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -449,10 +466,22 @@ const Events = () => {
               {eventEditError && (
                 <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl">
                   <div className="flex items-center">
-                    <svg className="w-5 h-5 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <svg
+                      className="w-5 h-5 text-red-500 mr-2"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
                     </svg>
-                    <span className="text-red-700 font-medium">{eventEditError}</span>
+                    <span className="text-red-700 font-medium">
+                      {eventEditError}
+                    </span>
                   </div>
                 </div>
               )}
@@ -675,7 +704,8 @@ const Events = () => {
                                     {formatDateTimeSimple(event.start_datetime)}
                                   </div>
                                   <div className="text-gray-500 text-xs">
-                                    to {formatDateTimeSimple(event.end_datetime)}
+                                    to{" "}
+                                    {formatDateTimeSimple(event.end_datetime)}
                                   </div>
                                 </div>
                               </td>
