@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import useVenueStore from "../store/useVenueStore";
 import { useNavigate } from "react-router-dom";
-import { toIso } from "../utils/fileUtils";
+import { formatDateTimeSimple, toIso } from "../utils/fileUtils";
 import SearchBar from "../components/search/SearchBar";
 
 const Events = () => {
@@ -256,7 +256,7 @@ const Events = () => {
                 </div> */}
 
                 {/* Date Range */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4">
                   {/* Start Date */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -267,6 +267,7 @@ const Events = () => {
                         type="datetime-local"
                         value={startTime}
                         min={today}
+
                         onChange={(e) => setStartTime(e.target.value)}
                         required
                         className="w-full px-4 py-3 pl-11 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400"
@@ -484,10 +485,10 @@ const Events = () => {
                           <td className="px-6 py-4">
                             <div className="text-sm text-gray-900">
                               <div className="font-medium">
-                                {event.start_datetime}
+                                {formatDateTimeSimple(event.start_datetime)}
                               </div>
                               <div className="text-gray-500 text-xs">
-                                to {event.end_datetime}
+                                to {formatDateTimeSimple(event.end_datetime)}
                               </div>
                             </div>
                           </td>
