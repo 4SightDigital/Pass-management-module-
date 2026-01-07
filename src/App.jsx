@@ -69,20 +69,20 @@ function App() {
           <main className="flex-1 overflow-y-auto p-4 md:p-6">
             <div className="max-w-7xl mx-auto">
               <Routes>
-                <Route
+                {/* <Route
                   path="/"
                   element={
                     <div className="bg-white rounded-xl shadow-sm p-6">
                       <h1 className="text-2xl font-bold text-gray-800 mb-4">
-                        Welcome to Booking Window
+                        Welcome to Complimentary Pass Booking System
                       </h1>
                       <p className="text-gray-600">
                         Select an option from the sidebar to get started.
                       </p>
                     </div>
                   }
-                />
-                <Route path="/book" element={BookTickets()}/>
+                /> */}
+                <Route path="/" element={BookTickets()}/>
                 <Route path="/venues" element={<Venues />} />
                 <Route path="/events" element={<Events />} />
                 <Route path="/manageSeats" element={<ManageSeating />} />
