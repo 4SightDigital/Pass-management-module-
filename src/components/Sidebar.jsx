@@ -110,8 +110,8 @@ function Sidebar({ isOpen, onClose }) {
           {/* Navigation */}
           <nav className={`flex-1 p-4 space-y-1 overflow-y-auto ${isCollapsed ? "px-2" : ""}`}>
             <SidebarLink 
-              to="/" 
-              label="Dashboard" 
+              to="/book" 
+              label="Booking Window" 
               icon={<Home className="w-5 h-5" />} 
               isCollapsed={isCollapsed}
             />

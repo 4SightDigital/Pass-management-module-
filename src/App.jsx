@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Sidebar from "./components/Sidebar";
 import Venues from "./pages/Venues";
@@ -6,9 +6,19 @@ import Events from "./pages/Events";
 import ManageSeating from "./pages/ManageSeating";
 import BookTickets from "./pages/BookTickets";
 import logo from "../src/assets/company-logo.webp";
+import useVenueStore from "./store/useVenueStore";
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+
+  const {fetchVenues, fetchEvents} = useVenueStore()
+
+  useEffect(()=> {
+    fetchVenues()
+    fetchEvents()
+    console.log("fetched venues and evenets")
+  },[fetchVenues,fetchEvents])
 
   return (
     <BrowserRouter>
@@ -64,7 +74,7 @@ function App() {
                   element={
                     <div className="bg-white rounded-xl shadow-sm p-6">
                       <h1 className="text-2xl font-bold text-gray-800 mb-4">
-                        Welcome to foresight Dashboard
+                        Welcome to Booking Window
                       </h1>
                       <p className="text-gray-600">
                         Select an option from the sidebar to get started.
@@ -72,6 +82,7 @@ function App() {
                     </div>
                   }
                 />
+                <Route path="/book" element={BookTickets()}/>
                 <Route path="/venues" element={<Venues />} />
                 <Route path="/events" element={<Events />} />
                 <Route path="/manageSeats" element={<ManageSeating />} />

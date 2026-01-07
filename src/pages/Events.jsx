@@ -80,9 +80,9 @@ const Events = () => {
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchEvents();
-  }, []);
+  // useEffect(() => {
+  //   fetchEvents();
+  // }, []);
 
   useEffect(() => {
     setFilteredEvents(events);
@@ -749,14 +749,14 @@ const Events = () => {
                                       />
                                     </svg>
                                   </button>
-                                  <button
+                                  {/* <button
                                     onClick={() =>
                                       navigate(`/events/${event.id}/book`)
                                     }
                                     className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-blue-500 text-white rounded-xl hover:from-emerald-600 hover:to-blue-600 transition-all duration-300 text-sm font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
                                   >
                                     Book Tickets
-                                  </button>
+                                  </button> */}
                                 </div>
                               </td>
                             </>
