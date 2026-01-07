@@ -176,6 +176,123 @@ function BookTickets() {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-5">
+                
+
+                {/* Guest Name */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Guest Name *
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={guestName}
+                      onChange={(e) => setGuestName(e.target.value)}
+                      placeholder="Enter guest full name"
+                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400 ${
+                        errors.guestName ? 'border-red-300' : 'border-gray-300'
+                      }`}
+                    />
+                    <div className="absolute right-3 top-3">
+                      <svg
+                        className="w-5 h-5 text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                  {errors.guestName && (
+                    <p className="mt-1 text-xs text-red-600">{errors.guestName}</p>
+                  )}
+                </div>
+                  {/* Department */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Department of Guest*
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={department}
+                      onChange={(e) => setDepartment(e.target.value)}
+                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400 appearance-none ${
+                        errors.department ? 'border-red-300' : 'border-gray-300'
+                      }`}
+                    >
+                      <option value="">Select department of Guest</option>
+                      {Object.keys(departments).map((dept) => (
+                        <option key={dept} value={dept}>{dept}</option>
+                      ))}
+                    </select>
+                    <div className="absolute right-4 top-3 pointer-events-none">
+                      <svg
+                        className="w-5 h-5 text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                  {errors.department && (
+                    <p className="mt-1 text-xs text-red-600">{errors.department}</p>
+                  )}
+                </div>
+
+                {/* Sub-Department */}
+                {department && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Sub-Department of Guest *
+                    </label>
+                    <div className="relative">
+                      <select
+                        value={subDepartment}
+                        onChange={(e) => setSubDepartment(e.target.value)}
+                        className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400 appearance-none ${
+                          errors.subDepartment ? 'border-red-300' : 'border-gray-300'
+                        }`}
+                      >
+                        <option value="">Select sub-department</option>
+                        {departments[department].map((subDept) => (
+                          <option key={subDept} value={subDept}>{subDept}</option>
+                        ))}
+                      </select>
+                      <div className="absolute right-4 top-3 pointer-events-none">
+                        <svg
+                          className="w-5 h-5 text-gray-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+                    {errors.subDepartment && (
+                      <p className="mt-1 text-xs text-red-600">{errors.subDepartment}</p>
+                    )}
+                  </div>
+                )}
+
                 {/* Event Selection */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -214,42 +331,6 @@ function BookTickets() {
                   </div>
                   {errors.selectedEvent && (
                     <p className="mt-1 text-xs text-red-600">{errors.selectedEvent}</p>
-                  )}
-                </div>
-
-                {/* Guest Name */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Guest Name *
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={guestName}
-                      onChange={(e) => setGuestName(e.target.value)}
-                      placeholder="Enter guest full name"
-                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400 ${
-                        errors.guestName ? 'border-red-300' : 'border-gray-300'
-                      }`}
-                    />
-                    <div className="absolute right-3 top-3">
-                      <svg
-                        className="w-5 h-5 text-gray-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-                  {errors.guestName && (
-                    <p className="mt-1 text-xs text-red-600">{errors.guestName}</p>
                   )}
                 </div>
 
@@ -382,90 +463,12 @@ function BookTickets() {
                   )}
                 </div>
 
-                {/* Department */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Department *
-                  </label>
-                  <div className="relative">
-                    <select
-                      value={department}
-                      onChange={(e) => setDepartment(e.target.value)}
-                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400 appearance-none ${
-                        errors.department ? 'border-red-300' : 'border-gray-300'
-                      }`}
-                    >
-                      <option value="">Select department</option>
-                      {Object.keys(departments).map((dept) => (
-                        <option key={dept} value={dept}>{dept}</option>
-                      ))}
-                    </select>
-                    <div className="absolute right-4 top-3 pointer-events-none">
-                      <svg
-                        className="w-5 h-5 text-gray-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-                  {errors.department && (
-                    <p className="mt-1 text-xs text-red-600">{errors.department}</p>
-                  )}
-                </div>
-
-                {/* Sub-Department */}
-                {department && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Sub-Department *
-                    </label>
-                    <div className="relative">
-                      <select
-                        value={subDepartment}
-                        onChange={(e) => setSubDepartment(e.target.value)}
-                        className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400 appearance-none ${
-                          errors.subDepartment ? 'border-red-300' : 'border-gray-300'
-                        }`}
-                      >
-                        <option value="">Select sub-department</option>
-                        {departments[department].map((subDept) => (
-                          <option key={subDept} value={subDept}>{subDept}</option>
-                        ))}
-                      </select>
-                      <div className="absolute right-4 top-3 pointer-events-none">
-                        <svg
-                          className="w-5 h-5 text-gray-400"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                          />
-                        </svg>
-                      </div>
-                    </div>
-                    {errors.subDepartment && (
-                      <p className="mt-1 text-xs text-red-600">{errors.subDepartment}</p>
-                    )}
-                  </div>
-                )}
+                
 
                 {/* Reference Name */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Reference Name *
+                    Reference Person Name *
                   </label>
                   <div className="relative">
                     <input
@@ -502,7 +505,7 @@ function BookTickets() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Reference Age
+                      Reference Person Age *
                     </label>
                     <div className="relative">
                       <input
