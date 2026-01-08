@@ -351,7 +351,7 @@ const Events = () => {
                   {/* Start Date */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Start Date *
+                      Start Date Time *
                     </label>
                     <div className="relative">
                       <input
@@ -383,7 +383,7 @@ const Events = () => {
                   {/* End Date */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      End Date *
+                      End Date Time *
                     </label>
                     <div className="relative">
                       <input

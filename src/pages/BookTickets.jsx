@@ -38,10 +38,10 @@ function BookTickets() {
   };
 
   // Calculate available seats and price
-  const availableSeats = selectedSubCategory 
+  const availableSeats = selectedSubCategory
     ? selectedSubCategory.capacity - (selectedSubCategory.booked || 0)
     : 0;
-  const totalPrice = selectedSubCategory 
+  const totalPrice = selectedSubCategory
     ? seatsRequested * selectedSubCategory.price
     : 0;
 
@@ -71,8 +71,10 @@ function BookTickets() {
     if (!guestName.trim()) newErrors.guestName = "Guest name is required";
     if (!categoryId) newErrors.categoryId = "Category is required";
     if (!subCategoryId) newErrors.subCategoryId = "Sub-category is required";
-    if (seatsRequested < 1) newErrors.seatsRequested = "At least 1 seat required";
-    if (seatsRequested > availableSeats) newErrors.seatsRequested = `Only ${availableSeats} seats available`;
+    if (seatsRequested < 1)
+      newErrors.seatsRequested = "At least 1 seat required";
+    if (seatsRequested > availableSeats)
+      newErrors.seatsRequested = `Only ${availableSeats} seats available`;
     if (!department) newErrors.department = "Department is required";
     if (!subDepartment) newErrors.subDepartment = "Sub-department is required";
     if (!refName.trim()) newErrors.refName = "Reference name is required";
@@ -127,16 +129,20 @@ function BookTickets() {
 
       // Update store
       addBooking(booking);
-      
+
       // Update seat count
-      updateEventSeats(selectedEvent, categoryId, subCategoryId, seatsRequested);
+      updateEventSeats(
+        selectedEvent,
+        categoryId,
+        subCategoryId,
+        seatsRequested
+      );
 
       // Success message
       setBookingStatus("success: Tickets booked successfully!");
-      
+
       // Clear success message after 3 seconds
       setTimeout(() => setBookingStatus(""), 3000);
-
     } catch (error) {
       setBookingStatus(`error: ${error.message}`);
     }
@@ -168,7 +174,9 @@ function BookTickets() {
               {/* Form Header */}
               <div className="mb-6">
                 <div className="text-white text-center w-full px-4 py-3 rounded-xl shadow-lg bg-gradient-to-r from-emerald-500 to-blue-500 mb-4">
-                  <h2 className="text-lg font-semibold">Book Complimentary Pass</h2>
+                  <h2 className="text-lg font-semibold">
+                    Book Complimentary Pass
+                  </h2>
                 </div>
                 <p className="text-gray-600 text-sm">
                   Fill in the details to book Complimentary Passes
@@ -176,8 +184,6 @@ function BookTickets() {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-5">
-                
-
                 {/* Guest Name */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -190,7 +196,7 @@ function BookTickets() {
                       onChange={(e) => setGuestName(e.target.value)}
                       placeholder="Enter guest full name"
                       className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400 ${
-                        errors.guestName ? 'border-red-300' : 'border-gray-300'
+                        errors.guestName ? "border-red-300" : "border-gray-300"
                       }`}
                     />
                     <div className="absolute right-3 top-3">
@@ -210,10 +216,12 @@ function BookTickets() {
                     </div>
                   </div>
                   {errors.guestName && (
-                    <p className="mt-1 text-xs text-red-600">{errors.guestName}</p>
+                    <p className="mt-1 text-xs text-red-600">
+                      {errors.guestName}
+                    </p>
                   )}
                 </div>
-                  {/* Department */}
+                {/* Department */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Department of Guest*
@@ -223,12 +231,14 @@ function BookTickets() {
                       value={department}
                       onChange={(e) => setDepartment(e.target.value)}
                       className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400 appearance-none ${
-                        errors.department ? 'border-red-300' : 'border-gray-300'
+                        errors.department ? "border-red-300" : "border-gray-300"
                       }`}
                     >
                       <option value="">Select department of Guest</option>
                       {Object.keys(departments).map((dept) => (
-                        <option key={dept} value={dept}>{dept}</option>
+                        <option key={dept} value={dept}>
+                          {dept}
+                        </option>
                       ))}
                     </select>
                     <div className="absolute right-4 top-3 pointer-events-none">
@@ -248,7 +258,9 @@ function BookTickets() {
                     </div>
                   </div>
                   {errors.department && (
-                    <p className="mt-1 text-xs text-red-600">{errors.department}</p>
+                    <p className="mt-1 text-xs text-red-600">
+                      {errors.department}
+                    </p>
                   )}
                 </div>
 
@@ -263,12 +275,16 @@ function BookTickets() {
                         value={subDepartment}
                         onChange={(e) => setSubDepartment(e.target.value)}
                         className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400 appearance-none ${
-                          errors.subDepartment ? 'border-red-300' : 'border-gray-300'
+                          errors.subDepartment
+                            ? "border-red-300"
+                            : "border-gray-300"
                         }`}
                       >
                         <option value="">Select sub-department</option>
                         {departments[department].map((subDept) => (
-                          <option key={subDept} value={subDept}>{subDept}</option>
+                          <option key={subDept} value={subDept}>
+                            {subDept}
+                          </option>
                         ))}
                       </select>
                       <div className="absolute right-4 top-3 pointer-events-none">
@@ -288,7 +304,9 @@ function BookTickets() {
                       </div>
                     </div>
                     {errors.subDepartment && (
-                      <p className="mt-1 text-xs text-red-600">{errors.subDepartment}</p>
+                      <p className="mt-1 text-xs text-red-600">
+                        {errors.subDepartment}
+                      </p>
                     )}
                   </div>
                 )}
@@ -303,7 +321,9 @@ function BookTickets() {
                       value={selectedEvent}
                       onChange={(e) => setSelectedEvent(e.target.value)}
                       className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400 appearance-none ${
-                        errors.selectedEvent ? 'border-red-300' : 'border-gray-300'
+                        errors.selectedEvent
+                          ? "border-red-300"
+                          : "border-gray-300"
                       }`}
                     >
                       <option value="">Choose an event</option>
@@ -330,14 +350,16 @@ function BookTickets() {
                     </div>
                   </div>
                   {errors.selectedEvent && (
-                    <p className="mt-1 text-xs text-red-600">{errors.selectedEvent}</p>
+                    <p className="mt-1 text-xs text-red-600">
+                      {errors.selectedEvent}
+                    </p>
                   )}
                 </div>
 
                 {/* Category Selection */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Category *
+                    Seating Category *
                   </label>
                   <div className="relative">
                     <select
@@ -345,10 +367,12 @@ function BookTickets() {
                       onChange={(e) => setCategoryId(e.target.value)}
                       disabled={!selectedEvent}
                       className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400 appearance-none ${
-                        errors.categoryId ? 'border-red-300' : 'border-gray-300'
-                      } ${!selectedEvent ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+                        errors.categoryId ? "border-red-300" : "border-gray-300"
+                      } ${
+                        !selectedEvent ? "bg-gray-50 cursor-not-allowed" : ""
+                      }`}
                     >
-                      <option value="">Select category</option>
+                      <option value="">Select Seat category</option>
                       {venue?.seating?.map((cat) => (
                         <option key={cat.id} value={cat.id}>
                           {cat.categoryName}
@@ -372,7 +396,9 @@ function BookTickets() {
                     </div>
                   </div>
                   {errors.categoryId && (
-                    <p className="mt-1 text-xs text-red-600">{errors.categoryId}</p>
+                    <p className="mt-1 text-xs text-red-600">
+                      {errors.categoryId}
+                    </p>
                   )}
                 </div>
 
@@ -380,17 +406,19 @@ function BookTickets() {
                 {selectedCategory && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Sub-Category *
+                      Seating Sub-Category *
                     </label>
                     <div className="relative">
                       <select
                         value={subCategoryId}
                         onChange={(e) => setSubCategoryId(e.target.value)}
                         className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400 appearance-none ${
-                          errors.subCategoryId ? 'border-red-300' : 'border-gray-300'
+                          errors.subCategoryId
+                            ? "border-red-300"
+                            : "border-gray-300"
                         }`}
                       >
-                        <option value="">Select sub-category</option>
+                        <option value="">Select sub-category of seats</option>
                         {selectedCategory.subCategories?.map((subCat) => (
                           <option key={subCat.id} value={subCat.id}>
                             {subCat.subCategoryName} (${subCat.price})
@@ -414,7 +442,9 @@ function BookTickets() {
                       </div>
                     </div>
                     {errors.subCategoryId && (
-                      <p className="mt-1 text-xs text-red-600">{errors.subCategoryId}</p>
+                      <p className="mt-1 text-xs text-red-600">
+                        {errors.subCategoryId}
+                      </p>
                     )}
                   </div>
                 )}
@@ -430,11 +460,17 @@ function BookTickets() {
                       min="1"
                       max={availableSeats}
                       value={seatsRequested}
-                      onChange={(e) => setSeatsRequested(parseInt(e.target.value) || 1)}
+                      onChange={(e) =>
+                        setSeatsRequested(parseInt(e.target.value) || 1)
+                      }
                       disabled={!subCategoryId}
                       className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400 appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${
-                        errors.seatsRequested ? 'border-red-300' : 'border-gray-300'
-                      } ${!subCategoryId ? 'bg-gray-50 cursor-not-allowed' : ''}`}
+                        errors.seatsRequested
+                          ? "border-red-300"
+                          : "border-gray-300"
+                      } ${
+                        !subCategoryId ? "bg-gray-50 cursor-not-allowed" : ""
+                      }`}
                     />
                     <div className="absolute right-3 top-3.5">
                       <svg
@@ -455,15 +491,20 @@ function BookTickets() {
                   {selectedSubCategory && (
                     <div className="mt-1 text-xs text-gray-500 space-y-1">
                       <p>Available: {availableSeats} seats</p>
-                      <p>Price per seat: <span className="font-semibold">${selectedSubCategory.price}</span></p>
+                      <p>
+                        Price per seat:{" "}
+                        <span className="font-semibold">
+                          ${selectedSubCategory.price}
+                        </span>
+                      </p>
                     </div>
                   )}
                   {errors.seatsRequested && (
-                    <p className="mt-1 text-xs text-red-600">{errors.seatsRequested}</p>
+                    <p className="mt-1 text-xs text-red-600">
+                      {errors.seatsRequested}
+                    </p>
                   )}
                 </div>
-
-                
 
                 {/* Reference Name */}
                 <div>
@@ -477,7 +518,7 @@ function BookTickets() {
                       onChange={(e) => setRefName(e.target.value)}
                       placeholder="Enter reference person name"
                       className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400 ${
-                        errors.refName ? 'border-red-300' : 'border-gray-300'
+                        errors.refName ? "border-red-300" : "border-gray-300"
                       }`}
                     />
                     <div className="absolute right-3 top-3">
@@ -497,7 +538,9 @@ function BookTickets() {
                     </div>
                   </div>
                   {errors.refName && (
-                    <p className="mt-1 text-xs text-red-600">{errors.refName}</p>
+                    <p className="mt-1 text-xs text-red-600">
+                      {errors.refName}
+                    </p>
                   )}
                 </div>
 
@@ -505,7 +548,7 @@ function BookTickets() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Reference Person Age *
+                      Reference Person Age*
                     </label>
                     <div className="relative">
                       <input
@@ -537,14 +580,16 @@ function BookTickets() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Gender *
+                      Gender*
                     </label>
                     <div className="relative">
                       <select
                         value={refGender}
                         onChange={(e) => setRefGender(e.target.value)}
                         className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400 appearance-none ${
-                          errors.refGender ? 'border-red-300' : 'border-gray-300'
+                          errors.refGender
+                            ? "border-red-300"
+                            : "border-gray-300"
                         }`}
                       >
                         <option value="">Select gender</option>
@@ -569,7 +614,9 @@ function BookTickets() {
                       </div>
                     </div>
                     {errors.refGender && (
-                      <p className="mt-1 text-xs text-red-600">{errors.refGender}</p>
+                      <p className="mt-1 text-xs text-red-600">
+                        {errors.refGender}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -586,7 +633,7 @@ function BookTickets() {
                       onChange={(e) => setRefContact(e.target.value)}
                       placeholder="Enter contact number"
                       className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400 ${
-                        errors.refContact ? 'border-red-300' : 'border-gray-300'
+                        errors.refContact ? "border-red-300" : "border-gray-300"
                       }`}
                     />
                     <div className="absolute right-3 top-3">
@@ -606,7 +653,9 @@ function BookTickets() {
                     </div>
                   </div>
                   {errors.refContact && (
-                    <p className="mt-1 text-xs text-red-600">{errors.refContact}</p>
+                    <p className="mt-1 text-xs text-red-600">
+                      {errors.refContact}
+                    </p>
                   )}
                 </div>
 
@@ -675,22 +724,466 @@ function BookTickets() {
           </div>
 
           {/* Right Side - Information (2 columns on right) */}
+
           <div className="lg:col-span-2">
             <div className="bg-white rounded-2xl shadow-lg p-6">
               {/* Summary Header */}
               <div className="mb-6">
                 <div className="text-white text-center w-full px-4 py-3 rounded-xl shadow-lg bg-gradient-to-r from-emerald-500 to-blue-500 mb-4">
-                  <h2 className="text-lg font-semibold">Seat Availability Status</h2>
+                  <h2 className="text-lg font-semibold">
+                    Seat Availability Status
+                  </h2>
                 </div>
                 <p className="text-gray-600 text-sm">
-                  Review your Available seat details
+                  Review available seat details and booking status
                 </p>
               </div>
 
               {/* Summary Content */}
               <div className="space-y-6">
-                {/* Event Information */}
-                
+                {selectedEvent && event && venue ? (
+                  <>
+                    {/* Event & Venue Info Banner */}
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-5 border border-blue-100 mb-6">
+                      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                            {event.name}
+                          </h3>
+                          <div className="flex flex-wrap gap-4">
+                            <div className="flex items-center">
+                              <svg
+                                className="w-4 h-4 text-blue-600 mr-2"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                                />
+                              </svg>
+                              <span className="text-sm text-gray-700">
+                                {venue.name}
+                              </span>
+                            </div>
+                            <div className="flex items-center">
+                              <svg
+                                className="w-4 h-4 text-blue-600 mr-2"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                />
+                              </svg>
+                              <span className="text-sm text-gray-700">
+                                {new Date(event.date).toLocaleDateString(
+                                  "en-US",
+                                  {
+                                    weekday: "short",
+                                    month: "short",
+                                    day: "numeric",
+                                  }
+                                )}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="bg-white px-4 py-2 rounded-lg border border-blue-200">
+                          <div className="flex items-center gap-3">
+                            <div className="text-center">
+                              <div className="text-2xl font-bold text-blue-700">
+                                {venue.seating?.reduce(
+                                  (total, cat) =>
+                                    cat.subCategories?.reduce(
+                                      (catTotal, subCat) =>
+                                        catTotal + subCat.capacity,
+                                      0
+                                    ) || 0,
+                                  0
+                                )}
+                              </div>
+                              <div className="text-xs text-gray-600">
+                                Total Seats
+                              </div>
+                            </div>
+                            <div className="h-8 w-px bg-gray-300"></div>
+                            <div className="text-center">
+                              <div className="text-2xl font-bold text-emerald-600">
+                                {venue.seating?.reduce(
+                                  (total, cat) =>
+                                    cat.subCategories?.reduce(
+                                      (catTotal, subCat) =>
+                                        catTotal +
+                                        (subCat.capacity -
+                                          (subCat.booked || 0)),
+                                      0
+                                    ) || 0,
+                                  0
+                                )}
+                              </div>
+                              <div className="text-xs text-gray-600">
+                                Available
+                              </div>
+                            </div>
+                            <div className="h-8 w-px bg-gray-300"></div>
+                            <div className="text-center">
+                              <div className="text-2xl font-bold text-amber-600">
+                                {venue.seating?.reduce(
+                                  (total, cat) =>
+                                    cat.subCategories?.reduce(
+                                      (catTotal, subCat) =>
+                                        catTotal + (subCat.booked || 0),
+                                      0
+                                    ) || 0,
+                                  0
+                                )}
+                              </div>
+                              <div className="text-xs text-gray-600">
+                                Booked
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Category Cards Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {venue.seating?.map((category) => {
+                        const categoryTotalCapacity =
+                          category.subCategories?.reduce(
+                            (total, subCat) => total + subCat.capacity,
+                            0
+                          ) || 0;
+                        const categoryBooked =
+                          category.subCategories?.reduce(
+                            (total, subCat) => total + (subCat.booked || 0),
+                            0
+                          ) || 0;
+                        const categoryAvailable =
+                          categoryTotalCapacity - categoryBooked;
+
+                        return (
+                          <div
+                            key={category.id}
+                            className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-300"
+                          >
+                            {/* Category Header */}
+                            <div className="bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 px-5 py-4 rounded-t-xl">
+                              <div className="flex justify-between items-center mb-2">
+                                <h3 className="text-lg font-semibold text-gray-900">
+                                  {category.categoryName}
+                                </h3>
+                                <span
+                                  className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                    categoryAvailable > 0
+                                      ? "bg-emerald-100 text-emerald-800"
+                                      : "bg-red-100 text-red-800"
+                                  }`}
+                                >
+                                  {categoryAvailable > 0
+                                    ? "Available"
+                                    : "Sold Out"}
+                                </span>
+                              </div>
+
+                              {/* Category Stats */}
+                              <div className="grid grid-cols-3 gap-4">
+                                <div className="text-center">
+                                  <div className="text-xl font-bold text-gray-900">
+                                    {categoryTotalCapacity}
+                                  </div>
+                                  <div className="text-xs text-gray-600">
+                                    Total
+                                  </div>
+                                </div>
+                                <div className="text-center">
+                                  <div className="text-xl font-bold text-emerald-600">
+                                    {categoryAvailable}
+                                  </div>
+                                  <div className="text-xs text-gray-600">
+                                    Available
+                                  </div>
+                                </div>
+                                <div className="text-center">
+                                  <div className="text-xl font-bold text-amber-600">
+                                    {categoryBooked}
+                                  </div>
+                                  <div className="text-xs text-gray-600">
+                                    Booked
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Sub-Categories List */}
+                            <div className="p-4">
+                              <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center">
+                                <svg
+                                  className="w-4 h-4 text-gray-400 mr-2"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                                  />
+                                </svg>
+                                Sub-Categories (
+                                {category.subCategories?.length || 0})
+                              </h4>
+
+                              <div className="space-y-3">
+                                {category.subCategories?.map((subCategory) => {
+                                  const subAvailable =
+                                    subCategory.capacity -
+                                    (subCategory.booked || 0);
+                                  const bookedPercentage =
+                                    ((subCategory.booked || 0) /
+                                      subCategory.capacity) *
+                                    100;
+
+                                  return (
+                                    <div
+                                      key={subCategory.id}
+                                      className="border border-gray-200 rounded-lg p-3 hover:border-gray-300 transition-colors"
+                                    >
+                                      <div className="flex justify-between items-center mb-2">
+                                        <div>
+                                          <h5 className="font-medium text-gray-900">
+                                            {subCategory.subCategoryName}
+                                          </h5>
+                                          <p className="text-xs text-gray-600">
+                                            ${subCategory.price} per seat
+                                          </p>
+                                        </div>
+                                        <div
+                                          className={`px-2 py-1 rounded text-xs font-medium ${
+                                            subAvailable > 0
+                                              ? "bg-blue-100 text-blue-800"
+                                              : "bg-gray-100 text-gray-800"
+                                          }`}
+                                        >
+                                          {subAvailable} left
+                                        </div>
+                                      </div>
+
+                                      {/* Progress Bar */}
+                                      <div className="mb-2">
+                                        <div className="flex justify-between text-xs text-gray-600 mb-1">
+                                          <span>
+                                            Booked: {subCategory.booked || 0}/
+                                            {subCategory.capacity}
+                                          </span>
+                                          <span>
+                                            {Math.round(bookedPercentage)}%
+                                          </span>
+                                        </div>
+                                        <div className="w-full bg-gray-200 rounded-full h-2">
+                                          <div
+                                            className={`h-2 rounded-full ${
+                                              bookedPercentage >= 90
+                                                ? "bg-red-500"
+                                                : bookedPercentage >= 70
+                                                ? "bg-amber-500"
+                                                : bookedPercentage >= 50
+                                                ? "bg-yellow-500"
+                                                : "bg-emerald-500"
+                                            }`}
+                                            style={{
+                                              width: `${bookedPercentage}%`,
+                                            }}
+                                          ></div>
+                                        </div>
+                                      </div>
+
+                                      {/* Stats */}
+                                      <div className="grid grid-cols-3 gap-2 text-center">
+                                        <div className="bg-gray-50 rounded p-1">
+                                          <div className="text-xs text-gray-600">
+                                            Total
+                                          </div>
+                                          <div className="text-sm font-semibold text-gray-900">
+                                            {subCategory.capacity}
+                                          </div>
+                                        </div>
+                                        <div className="bg-emerald-50 rounded p-1">
+                                          <div className="text-xs text-emerald-600">
+                                            Available
+                                          </div>
+                                          <div className="text-sm font-semibold text-emerald-700">
+                                            {subAvailable}
+                                          </div>
+                                        </div>
+                                        <div className="bg-amber-50 rounded p-1">
+                                          <div className="text-xs text-amber-600">
+                                            Booked
+                                          </div>
+                                          <div className="text-sm font-semibold text-amber-700">
+                                            {subCategory.booked || 0}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+
+                            {/* Category Footer */}
+                            <div className="border-t border-gray-100 px-5 py-3 bg-gray-50 rounded-b-xl">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center">
+                                  <svg
+                                    className="w-4 h-4 text-gray-400 mr-2"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                    />
+                                  </svg>
+                                  <span className="text-xs text-gray-600">
+                                    {category.subCategories?.length || 0}{" "}
+                                    sub-categories
+                                  </span>
+                                </div>
+                                <button
+                                  onClick={() => setCategoryId(category.id)}
+                                  className={`text-sm font-medium px-3 py-1 rounded-lg transition-colors ${
+                                    categoryId === category.id
+                                      ? "bg-blue-100 text-blue-700"
+                                      : "text-blue-600 hover:bg-blue-50"
+                                  }`}
+                                >
+                                  {categoryId === category.id
+                                    ? "Selected ✓"
+                                    : "Select"}
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Legend */}
+                    <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                      <h4 className="text-sm font-medium text-gray-700 mb-3">
+                        Availability Legend
+                      </h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div className="flex items-center">
+                          <div className="w-3 h-3 bg-emerald-500 rounded-full mr-2"></div>
+                          <span className="text-sm text-gray-600">
+                            Below 50% booked
+                          </span>
+                        </div>
+                        <div className="flex items-center">
+                          <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
+                          <span className="text-sm text-gray-600">
+                            50-70% booked
+                          </span>
+                        </div>
+                        <div className="flex items-center">
+                          <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+                          <span className="text-sm text-gray-600">
+                            Above 70% booked
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  // Empty State
+                  <div className="text-center py-16">
+                    <div className="w-20 h-20 mx-auto bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mb-6">
+                      <svg
+                        className="w-10 h-10 text-gray-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                      </svg>
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                      No Event Selected
+                    </h3>
+                    <p className="text-gray-600 max-w-md mx-auto mb-6">
+                      Select an event from the dropdown to view seat
+                      availability and booking status for each category.
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-lg mx-auto">
+                      <div className="border-2 border-dashed border-gray-300 rounded-xl p-4">
+                        <div className="w-12 h-12 mx-auto bg-gray-100 rounded-lg flex items-center justify-center mb-3">
+                          <svg
+                            className="w-6 h-6 text-gray-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                            />
+                          </svg>
+                        </div>
+                        <h4 className="font-medium text-gray-900 mb-1">
+                          Category Overview
+                        </h4>
+                        <p className="text-sm text-gray-600">
+                          View all seating categories and their availability
+                        </p>
+                      </div>
+                      <div className="border-2 border-dashed border-gray-300 rounded-xl p-4">
+                        <div className="w-12 h-12 mx-auto bg-gray-100 rounded-lg flex items-center justify-center mb-3">
+                          <svg
+                            className="w-6 h-6 text-gray-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9.5a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z"
+                            />
+                          </svg>
+                        </div>
+                        <h4 className="font-medium text-gray-900 mb-1">
+                          Real-time Status
+                        </h4>
+                        <p className="text-sm text-gray-600">
+                          See booked and available seats in real-time
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

@@ -120,7 +120,7 @@ const ManageSeating = () => {
             const isOpen = openVenueId === venue.id;
             const venueTotalSeats = getVenueTotalSeats(venue);
             const venueCapacity = venue.total_capacity || 0;
-
+            console.log("venuesss111", venue)
             return (
               <div
                 key={venue.id}

@@ -134,8 +134,8 @@ function Sidebar({ isOpen, onClose }) {
               isCollapsed={isCollapsed}
             />
             <SidebarLink 
-              to="/attendees" 
-              label="Attendees" 
+              to="/reports" 
+              label="Booking Reports" 
               icon={<Users className="w-5 h-5" />} 
               isCollapsed={isCollapsed}
             />
