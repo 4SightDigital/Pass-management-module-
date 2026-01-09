@@ -34,6 +34,13 @@ function AddCategory({ onAdd }) {
     setOpen(false);
   };
 
+
+  const handleCancel = () => {
+    setName("");
+    setTotalSeats("");
+    setErrors({});
+    setOpen(false);
+  }
   return (
     <div className="border rounded-lg bg-white shadow-sm mt-4">
       {/* Accordion Header */}
@@ -104,7 +111,7 @@ function AddCategory({ onAdd }) {
             <div className="flex justify-end gap-2 pt-2">
               <button
                 type="button"
-                onClick={() => setOpen(false)}
+                onClick={() => handleCancel()}
                 className="px-3 py-2 text-sm text-gray-600 hover:text-gray-800"
               >
                 Cancel
