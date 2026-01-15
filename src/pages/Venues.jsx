@@ -121,7 +121,7 @@ function Venues() {
   // }, [fetchVenues]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-4 md:p-6">
+    <div className="min-h-fit bg-gradient-to-br from-gray-50 to-blue-50 p-4 md:p-6">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-800 mb-2">
@@ -300,7 +300,7 @@ function Venues() {
                   <input
                     type="file"
                     accept="image/*"
-                    required
+                    // required
                     className="text-gray-400 w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400 cursor-pointer bg-white file:mr-4 file:py-0 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100"
                     ref={fileInputRef}
                     onChange={handleImageUpload}

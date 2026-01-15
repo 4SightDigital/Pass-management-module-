@@ -7,11 +7,10 @@ import ManageSeating from "./pages/ManageSeating";
 import BookTickets from "./pages/BookTickets";
 import logo from "../src/assets/company-logo.webp";
 import useVenueStore from "./store/useVenueStore";
+import Navbar from "./components/Navbar";
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
-
   const {fetchVenues, fetchEvents} = useVenueStore()
 
   useEffect(()=> {
@@ -64,24 +63,12 @@ function App() {
               <div className="w-10"></div>
             </div>
           </header>
-
+          <Navbar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
           {/* Page Content */}
           <main className="flex-1 overflow-y-auto p-4 md:p-6">
             <div className="max-w-7xl mx-auto">
               <Routes>
-                {/* <Route
-                  path="/"
-                  element={
-                    <div className="bg-white rounded-xl shadow-sm p-6">
-                      <h1 className="text-2xl font-bold text-gray-800 mb-4">
-                        Welcome to Complimentary Pass Booking System
-                      </h1>
-                      <p className="text-gray-600">
-                        Select an option from the sidebar to get started.
-                      </p>
-                    </div>
-                  }
-                /> */}
+  
                 <Route path="/" element={BookTickets()}/>
                 <Route path="/venues" element={<Venues />} />
                 <Route path="/events" element={<Events />} />

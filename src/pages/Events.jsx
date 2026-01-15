@@ -170,7 +170,7 @@ const Events = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-4 md:p-6">
+    <div className="min-h-fit bg-gradient-to-br from-gray-50 to-blue-50 p-4 md:p-6">
       {/* Page Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between">
