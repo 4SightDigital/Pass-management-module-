@@ -8,6 +8,7 @@ import BookTickets from "./pages/BookTickets";
 import logo from "../src/assets/company-logo.webp";
 import useVenueStore from "./store/useVenueStore";
 import Navbar from "./components/Navbar";
+import BookingReports from "./pages/BookingReports";
 
 function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -56,6 +57,7 @@ function App() {
                 <Route path="/events" element={<Events />} />
                 <Route path="/manageSeats" element={<ManageSeating />} />
                 <Route path="/events/:eventId/book" element={<BookTickets />} />
+                <Route path ="/reports" element={<BookingReports />}/>
               </Routes>
             </div>
           </main>
