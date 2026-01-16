@@ -16,9 +16,9 @@ import {
   X
 } from "lucide-react";
 
-function Sidebar({ isOpen, onClose }) {
+function Sidebar({ isOpen, onClose, isCollapsed, onCollapse }) {
   const location = useLocation();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  // const [isCollapsed, setIsCollapsed] = useState(false);
   
   // Auto-close sidebar on mobile when route changes
   // useEffect(() => {
@@ -57,7 +57,7 @@ function Sidebar({ isOpen, onClose }) {
 
       {/* Sidebar Container */}
       <aside
-        className={`fixed md:relative z-50
+        className={`fixed z-50
           top-0 left-0 h-screen
           bg-gradient-to-b from-gray-50 to-white
           border-r border-gray-200
@@ -67,17 +67,9 @@ function Sidebar({ isOpen, onClose }) {
           ${isCollapsed ? "w-20" : "w-64"}
           shadow-lg md:shadow-sm`}
       >
-        {/* Close button for mobile */}
-        {/* <button
-          onClick={onClose}
-          className="absolute -right-12 top-4 md:hidden p-2 bg-white rounded-full shadow-lg hover:bg-gray-100 transition-colors"
-        >
-          <X className="w-5 h-5" />
-        </button> */}
-
-        {/* Collapse Toggle Button (Desktop only) */}
+       
         <button
-          onClick={() => setIsCollapsed(!isCollapsed)}
+          onClick={() => onCollapse(!isCollapsed)}
           className="absolute -right-3 top-6 hidden md:flex items-center justify-center w-6 h-6 bg-white border border-gray-300 rounded-full shadow-sm hover:shadow-md transition-all hover:scale-110"
         >
           <ChevronLeft className={`w-4 h-4 transition-transform duration-300 ${isCollapsed ? "rotate-180" : ""}`} />
@@ -212,7 +204,7 @@ function SidebarLink({ to, label, icon, isCollapsed }) {
     >
       {/* Active indicator */}
       {isActive && (
-        <div className="absolute left-0 w-1 h-8 bg-gradient-to-b from-green-500 to-blue-500 rounded-r-full" />
+        <div className="fixed left-0 w-1 h-8 bg-gradient-to-b from-green-500 to-blue-500 rounded-r-full" />
       )}
       
       {/* Icon */}
@@ -239,7 +231,7 @@ function SidebarLink({ to, label, icon, isCollapsed }) {
       
       {/* Tooltip for collapsed state */}
       {isCollapsed && (
-        <div className="absolute left-full ml-4 px-2 py-1 bg-gray-900 text-white text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+        <div className="fixed left-full ml-4 px-2 py-1 bg-gray-900 text-white text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
           {label}
         </div>
       )}

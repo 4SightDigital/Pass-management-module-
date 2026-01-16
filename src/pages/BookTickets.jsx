@@ -1,6 +1,7 @@
 import React from "react";
 import { useState, useEffect } from "react";
 import useVenueStore from "../store/useVenueStore";
+import CategoryCard from "../components/CategoryCard";
 
 function BookTickets() {
   const events = useVenueStore((state) => state.events);
@@ -164,6 +165,106 @@ function BookTickets() {
     setBookingStatus("");
   };
 
+  const categoriesData = [
+    {
+      id: 1,
+      name: "VIP",
+      totalSeats: 6500,
+      availableSeats: 5300,
+      bookedSeats: 1200,
+      tableHeaders: {
+        subCategory: "Sub Category",
+        available: "Available",
+        booked: "Booked",
+        total: "Total",
+      },
+      subCategories: [
+        { name: "BLOCK A", available: 100, booked: 50 },
+        { name: "BLOCK drg", available: 100, booked: 50 },
+        { name: "Premium A", available: 100, booked: 50 },
+        { name: "BLOCK gfhfgh", available: 100, booked: 50 },
+        { name: "BLOCK fghfgh", available: 100, booked: 50 },
+        { name: "cat A", available: 100, booked: 50 },
+        { name: "BLOCKsdcvsd A", available: 100, booked: 50 },
+        { name: "Executive", available: 80, booked: 70 },
+        { name: "Diamond", available: 120, booked: 30 },
+      ],
+    },
+    {
+      id: 2,
+      name: "Premium",
+      totalSeats: 4000,
+      availableSeats: 3200,
+      bookedSeats: 800,
+      
+      subCategories: [
+        { name: "Section A", available: 200, booked: 100 },
+        { name: "Section B", available: 180, booked: 120 },
+        { name: "Section C", available: 150, booked: 150 },
+        { name: "Front Row", available: 80, booked: 70 },
+        { name: "Middle Row", available: 120, booked: 80 },
+        { name: "Back Row", available: 100, booked: 60 },
+      ],
+    },
+    {
+      id: 3,
+      name: "Economy",
+      totalSeats: 8000,
+      availableSeats: 5500,
+      bookedSeats: 2500,
+      
+      subCategories: [
+        { name: "North Stand", available: 500, booked: 500 },
+        { name: "South Stand", available: 400, booked: 600 },
+        { name: "East Stand", available: 350, booked: 650 },
+        { name: "West Stand", available: 300, booked: 700 },
+        { name: "General", available: 450, booked: 550 },
+      ],
+    },
+    {
+      id: 4,
+      name: "Student",
+      totalSeats: 2000,
+      availableSeats: 1400,
+      bookedSeats: 600,
+      subCategories: [
+        { name: "Block S1", available: 150, booked: 50 },
+        { name: "Block S2", available: 120, booked: 80 },
+        { name: "Block S3", available: 100, booked: 100 },
+        { name: "Block S4", available: 80, booked: 120 },
+        { name: "Block S5", available: 60, booked: 140 },
+      ],
+    },
+    {
+      id: 5,
+      name: "Corporate",
+      totalSeats: 1500,
+      availableSeats: 1000,
+      bookedSeats: 500,
+      subCategories: [
+        { name: "Executive Suite", available: 100, booked: 50 },
+        { name: "Premium Box", available: 80, booked: 70 },
+        { name: "Business Class", available: 120, booked: 30 },
+        { name: "Gold Lounge", available: 60, booked: 90 },
+        { name: "Silver Section", available: 90, booked: 60 },
+      ],
+    },
+    {
+      id: 6,
+      name: "Family",
+      totalSeats: 1000,
+      availableSeats: 700,
+      bookedSeats: 300,
+      subCategories: [
+        { name: "Family Zone A", available: 80, booked: 40 },
+        { name: "Family Zone B", available: 70, booked: 50 },
+        { name: "Kids Section", available: 90, booked: 30 },
+        { name: "Parent-Child", available: 60, booked: 60 },
+        { name: "Group Seating", available: 50, booked: 70 },
+      ],
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
@@ -171,7 +272,9 @@ function BookTickets() {
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
             Booking Management
           </h1>
-          <p className="text-gray-600">Create your bookings for Created Events</p>
+          <p className="text-gray-600">
+            Create your bookings for Created Events
+          </p>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Side - Form (1 column on left) */}
@@ -734,19 +837,60 @@ function BookTickets() {
 
           <div className="lg:col-span-2">
             <div className="bg-white rounded-2xl shadow-lg p-6">
-              {/* Summary Header */}
+              {/* Header */}
               <div className="mb-6">
-                <div className="text-white text-center w-full px-4 py-3 rounded-xl shadow-lg bg-gradient-to-r from-emerald-500 to-blue-500 mb-4">
-                  <h2 className="text-lg font-semibold">
-                    Seat Availability Status
-                  </h2>
+                <div className="text-white text-center w-full px-4 py-2 rounded-lg shadow bg-gradient-to-r from-emerald-500 to-blue-500 mb-3">
+                  <h2 className="text-base font-semibold">Seat Availability</h2>
                 </div>
-                <p className="text-gray-600 text-sm">
-                  Review available seat details and booking status
+                <p className="text-gray-600 text-xs">
+                  Real-time seat booking status by category
                 </p>
               </div>
 
-              {/* Summary Content */}
+              {/* Cards Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {categoriesData.map((category) => (
+                  <CategoryCard
+                    key={category.id}
+                    categoryName={category.name}
+                    totalSeats={category.totalSeats}
+                    availableSeats={category.availableSeats}
+                    bookedSeats={category.bookedSeats}
+                    subCategories={category.subCategories}
+                    // tableHeaders={category.tableHeaders}
+                  />
+                ))}
+              </div>
+
+              {/* Summary Footer */}
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-gray-900">
+                      22,000
+                    </div>
+                    <div className="text-xs text-gray-600">Total Capacity</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-emerald-600">
+                      16,100
+                    </div>
+                    <div className="text-xs text-gray-600">Available Seats</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-red-600">5,900</div>
+                    <div className="text-xs text-gray-600">Booked Seats</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-blue-600">
+                      26.8%
+                    </div>
+                    <div className="text-xs text-gray-600">
+                      Overall Occupancy
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
