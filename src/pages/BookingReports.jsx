@@ -647,7 +647,7 @@ const BookingReports = () => {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex justify-center">
                             <span className="px-3 py-1 bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 rounded-lg text-sm font-medium">
-                              {person.seatCategories} category
+                              {person.seatCategories} categor
                               {person.seatCategories !== 1 ? "ies" : "y"}
                             </span>
                           </div>
