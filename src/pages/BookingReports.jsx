@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Doughnut } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import SearchBar from "../components/search/SearchBar";
 
 // Register ChartJS components
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -92,6 +93,27 @@ const mockBookingData = {
       totalSeats: 5,
       seatCategories: 1,
     },
+    {
+      id: 11,
+      name: "Fjkl",
+      vipPasses: 3,
+      totalSeats: 5,
+      seatCategories: 1,
+    },
+    {
+      id: 12,
+      name: "Ardg",
+      vipPasses: 3,
+      totalSeats: 5,
+      seatCategories: 1,
+    },
+    {
+      id: 13,
+      name: "Lee",
+      vipPasses: 3,
+      totalSeats: 5,
+      seatCategories: 1,
+    },
   ],
 };
 
@@ -99,7 +121,10 @@ const BookingReports = () => {
   const [selectedEvent, setSelectedEvent] = useState("");
   const [bookingData, setBookingData] = useState(mockBookingData);
   const [isLoading, setIsLoading] = useState(false);
-
+  const [filtRefDetails, setFiltRefDetails] = useState(
+    bookingData.referencePersons,
+  );
+  // console.log("filtRefDetailsfiltRefDetails", filtRefDetails);
   // Handle event selection
   const handleEventChange = (e) => {
     const eventId = e.target.value;
@@ -111,6 +136,7 @@ const BookingReports = () => {
       setTimeout(() => {
         // In real app, fetch data based on eventId
         setBookingData(mockBookingData);
+        // setFiltRefDetails(mockBookingData.referencePersons)
         setIsLoading(false);
       }, 500);
     }
@@ -542,17 +568,29 @@ const BookingReports = () => {
                       />
                     </svg>
                   </div>
-                  <div>
-                    <h2 className="text-lg font-semibold text-gray-900">
-                      Reference Persons Details
-                    </h2>
-                    <p className="text-sm text-gray-600">
-                      Complete list of all reference persons and their
-                      allocations
-                    </p>
+                  <div className="flex flex-col">
+                    <div>
+                      <h2 className="text-lg font-semibold text-gray-900">
+                        Reference Persons Details
+                      </h2>
+                      <p className="text-sm text-gray-600">
+                        Complete list of all reference persons and their
+                        allocations
+                      </p>
+                    </div>
+                    {/* <div className="flex items-center space-x-2">
+                      {console.log("filtRefDetails234", filtRefDetails)}
+                      <SearchBar
+                        data={filtRefDetails}
+                        searchKeys={["name"]}
+                        // placeholder="deep search"
+                        onSearch={(results) =>
+                          setFiltRefDetails(results)
+                        }
+                      />
+                    </div> */}
                   </div>
                 </div>
-                
               </div>
 
               <div className="overflow-x-auto rounded-xl border border-gray-200">
@@ -581,7 +619,7 @@ const BookingReports = () => {
                   </thead>
 
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {bookingData.referencePersons.map((person, index) => (
+                    {filtRefDetails.map((person, index) => (
                       <tr
                         key={person.id}
                         className="hover:bg-gray-50 transition-colors duration-200"
@@ -660,8 +698,7 @@ const BookingReports = () => {
                               onClick={() =>
                                 console.log("View record for:", person.id)
                               }
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg text-sm font-medium transition-colors"
-
+                              className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg text-sm font-medium transition-colors"
                             >
                               <svg
                                 className="w-4 h-4 group-hover:scale-110 transition-transform"

@@ -87,7 +87,7 @@ function Sidebar({ isOpen, onClose, isCollapsed, onCollapse }) {
                   <h2 className="text-xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
                     FORESIGHT DIGITAL
                   </h2> */}
-                  <img src={logo} alt="" />
+                  <img src={logo} alt="logo" />
                 </div>
               )}
               {isCollapsed && (
@@ -102,7 +102,7 @@ function Sidebar({ isOpen, onClose, isCollapsed, onCollapse }) {
           {/* Navigation */}
           <nav className={`flex-1 p-4 space-y-1 overflow-y-auto ${isCollapsed ? "px-2" : ""}`}>
             <SidebarLink 
-              to="/" 
+              to="/booking" 
               label="Booking Window" 
               icon={<Home className="w-5 h-5" />} 
               isCollapsed={isCollapsed}
