@@ -15,9 +15,15 @@ import {
   LogOut,
   X
 } from "lucide-react";
+import useAuth from "../hooks/useAuth";
 
 function Sidebar({ isOpen, onClose, isCollapsed, onCollapse }) {
   const location = useLocation();
+    const { logout } = useAuth();
+  const { isAuthenticated } = useAuth();
+
+  if (!isAuthenticated) return null;
+
   // const [isCollapsed, setIsCollapsed] = useState(false);
   
   // Auto-close sidebar on mobile when route changes
@@ -164,7 +170,7 @@ function Sidebar({ isOpen, onClose, isCollapsed, onCollapse }) {
                     </div>
                   </div>
                   <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                    <LogOut className="w-4 h-4 text-gray-500" />
+                    <LogOut onClick={()=> logout()} className="w-4 h-4 text-gray-500" />
                   </button>
                 </>
               )}

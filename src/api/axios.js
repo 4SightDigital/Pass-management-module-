@@ -3,7 +3,7 @@ import axios from "axios";
 // Use relative path for production (EXE)
 const isDevelopment = import.meta.env.DEV;
 const baseURL = isDevelopment
-  ? "https://backend-pass-management.onrender.com/api"
+  ? "http://localhost:5000/api"
   : "/api";
 
 const api = axios.create({
@@ -11,7 +11,7 @@ const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-  // withCredentials: true, // 🔥 IMPORTANT
+  withCredentials: true, // 🔥 IMPORTANT
 });
 
 // Add request interceptor to handle auth if needed
@@ -29,10 +29,5 @@ const api = axios.create({
 //     return Promise.reject(error);
 //   },
 // );
-
-// API functions
-export const getVenues = () => api.get("/venues/");
-export const createVenue = (venueData) => api.post("/venues/", venueData);
-export const deleteVenue = (id) => api.delete(`/venues/${id}`);
 
 export default api;

@@ -40,7 +40,7 @@ const Events = () => {
     setEndTime("");
   };
 
-  const handleAddEvent = (e) => {
+  const handleAddEvent = async (e) => {
     e.preventDefault();
 
     if (startTime < today) {
@@ -58,9 +58,9 @@ const Events = () => {
     const backendFormatEndtime = toIso(endTime);
 
     try {
-      addEvent({
+      await addEvent({
       name: eventName,
-      venue: selectedVenue.id,
+      venue_id: selectedVenue.id,
       start_datetime: backendFormatStarttime,
       end_datetime: backendFormatEndtime,
     });

@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from "react";
 // import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
 
 import Sidebar from "./components/Sidebar";
 import Venues from "./pages/Venues";
@@ -12,25 +18,33 @@ import useVenueStore from "./store/useVenueStore";
 import Navbar from "./components/Navbar";
 import BookingReports from "./pages/BookingReports";
 import LoginPage from "./pages/LoginPage";
-
+import ProtectedRoute from "./components/ProtectedRoute";
+import useAuth from "./hooks/useAuth";
+import NotFoundPage from "./components/NotFoundPage";
+import { AuthProvider } from "./components/AuthContext";
 
 function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { fetchVenues, fetchEvents } = useVenueStore();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  // const { isAuthenticated } = useAuth();
+  
+  const { isAuthenticated, loading } = useAuth();
+  const hideLayout = !isAuthenticated;
 
   useEffect(() => {
-    fetchVenues();
-    fetchEvents();
-    console.log("fetched venues and events");
-  }, [fetchVenues, fetchEvents]);
+    if (isAuthenticated) {
+      fetchVenues();
+      fetchEvents();
+    }
+  }, [isAuthenticated]);
 
-  const location = useLocation();
-  const isLoginPage = location.pathname === "/login";
+  // const location = useLocation();
+  // const isLoginPage = location.pathname === "/login";
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-[#C8FECC] to-[#A6C1F5]">
-      {!isLoginPage && (
+      {!hideLayout && (
         <Sidebar
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
@@ -41,11 +55,11 @@ function AppLayout() {
 
       <div
         className={`flex flex-col flex-1 transition-all duration-300
-          ${!isLoginPage ? (isCollapsed ? "md:ml-20" : "md:ml-64") : ""}
+          ${!hideLayout ? (isCollapsed ? "md:ml-20" : "md:ml-64") : ""}
           pt-16
         `}
       >
-        {!isLoginPage && (
+        {!hideLayout && (
           <Navbar
             sidebarOpen={sidebarOpen}
             setSidebarOpen={setSidebarOpen}
@@ -59,12 +73,35 @@ function AppLayout() {
               <Route path="/" element={<Navigate to="/login" replace />} />
               <Route path="/login" element={<LoginPage />} />
 
-              <Route path="/booking" element={<BookTickets />} />
-              <Route path="/venues" element={<Venues />} />
-              <Route path="/events" element={<Events />} />
+              <Route
+                path="/booking"
+                element={
+                  <ProtectedRoute>
+                    <BookTickets />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/venues"
+                element={
+                  <ProtectedRoute>
+                    <Venues />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/events"
+                element={
+                  <ProtectedRoute>
+                    <Events />
+                  </ProtectedRoute>
+                }
+              />
               <Route path="/manageSeats" element={<ManageSeating />} />
               <Route path="/events/:eventId/book" element={<BookTickets />} />
               <Route path="/reports" element={<BookingReports />} />
+
+              <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </div>
         </main>
@@ -73,11 +110,12 @@ function AppLayout() {
   );
 }
 
-
 export default function App() {
   return (
     <BrowserRouter>
-      <AppLayout />
+      <AuthProvider>
+        <AppLayout />
+      </AuthProvider>
     </BrowserRouter>
   );
 }
