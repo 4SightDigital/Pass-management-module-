@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import logo from "../assets/company-logo.webp";
-import logoDesign from "../assets/logoDesign.PNG"
-import { 
-  Home, 
-  Calendar, 
-  MapPin, 
+import logoDesign from "../assets/logoDesign.PNG";
+import {
+  Home,
+  Calendar,
+  MapPin,
   Users,
   Settings,
   ChevronLeft,
@@ -13,19 +13,19 @@ import {
   Ticket,
   Grid3X3,
   LogOut,
-  X
+  X,
 } from "lucide-react";
-import useAuth from "../hooks/useAuth";
+import { useAuth } from "../components/AuthContext";
 
 function Sidebar({ isOpen, onClose, isCollapsed, onCollapse }) {
   const location = useLocation();
-    const { logout } = useAuth();
+  const { logout } = useAuth();
   const { isAuthenticated } = useAuth();
 
   if (!isAuthenticated) return null;
 
   // const [isCollapsed, setIsCollapsed] = useState(false);
-  
+
   // Auto-close sidebar on mobile when route changes
   // useEffect(() => {
   //   if (isOpen) {
@@ -34,21 +34,22 @@ function Sidebar({ isOpen, onClose, isCollapsed, onCollapse }) {
   // }, [location.pathname, onClose, isOpen]);
 
   useEffect(() => {
-  if (isOpen && window.innerWidth < 768) { // mobile only
-    onClose();
-  }
-}, [location.pathname]);
-  
+    if (isOpen && window.innerWidth < 768) {
+      // mobile only
+      onClose();
+    }
+  }, [location.pathname]);
+
   // Close sidebar on Escape key press
   useEffect(() => {
     const handleEscKey = (e) => {
-      if (e.key === 'Escape' && isOpen) {
+      if (e.key === "Escape" && isOpen) {
         onClose();
       }
     };
-    
-    window.addEventListener('keydown', handleEscKey);
-    return () => window.removeEventListener('keydown', handleEscKey);
+
+    window.addEventListener("keydown", handleEscKey);
+    return () => window.removeEventListener("keydown", handleEscKey);
   }, [isOpen, onClose]);
 
   return (
@@ -73,18 +74,23 @@ function Sidebar({ isOpen, onClose, isCollapsed, onCollapse }) {
           ${isCollapsed ? "w-20" : "w-64"}
           shadow-lg md:shadow-sm`}
       >
-       
         <button
           onClick={() => onCollapse(!isCollapsed)}
           className="absolute -right-3 top-6 hidden md:flex items-center justify-center w-6 h-6 bg-white border border-gray-300 rounded-full shadow-sm hover:shadow-md transition-all hover:scale-110"
         >
-          <ChevronLeft className={`w-4 h-4 transition-transform duration-300 ${isCollapsed ? "rotate-180" : ""}`} />
+          <ChevronLeft
+            className={`w-4 h-4 transition-transform duration-300 ${isCollapsed ? "rotate-180" : ""}`}
+          />
         </button>
 
         <div className="h-full flex flex-col">
           {/* Header */}
-          <div className={`p-4 border-b border-gray-200 ${isCollapsed ? "px-3" : ""}`}>
-            <div className={`flex items-center ${isCollapsed ? "justify-center" : "justify-between"}`}>
+          <div
+            className={`p-4 border-b border-gray-200 ${isCollapsed ? "px-3" : ""}`}
+          >
+            <div
+              className={`flex items-center ${isCollapsed ? "justify-center" : "justify-between"}`}
+            >
               {!isCollapsed && (
                 <div className="flex items-center space-x-2">
                   {/* <div className="w-8 h-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-lg flex items-center justify-center">
@@ -106,58 +112,66 @@ function Sidebar({ isOpen, onClose, isCollapsed, onCollapse }) {
           </div>
 
           {/* Navigation */}
-          <nav className={`flex-1 p-4 space-y-1 overflow-y-auto ${isCollapsed ? "px-2" : ""}`}>
-            <SidebarLink 
-              to="/booking" 
-              label="Booking Window" 
-              icon={<Home className="w-5 h-5" />} 
+          <nav
+            className={`flex-1 p-4 space-y-1 overflow-y-auto ${isCollapsed ? "px-2" : ""}`}
+          >
+            <SidebarLink
+              to="/booking"
+              label="Booking Window"
+              icon={<Home className="w-5 h-5" />}
               isCollapsed={isCollapsed}
             />
-            <SidebarLink 
-              to="/venues" 
-              label="Venues" 
-              icon={<Building2 className="w-5 h-5" />} 
+            <SidebarLink
+              to="/venues"
+              label="Venues"
+              icon={<Building2 className="w-5 h-5" />}
               isCollapsed={isCollapsed}
             />
-            <SidebarLink 
-              to="/events" 
-              label="Events" 
-              icon={<Calendar className="w-5 h-5" />} 
+            <SidebarLink
+              to="/events"
+              label="Events"
+              icon={<Calendar className="w-5 h-5" />}
               isCollapsed={isCollapsed}
             />
-            <SidebarLink 
-              to="/manageSeats" 
-              label="Manage Seating" 
-              icon={<Grid3X3 className="w-5 h-5" />} 
+            <SidebarLink
+              to="/manageSeats"
+              label="Manage Seating"
+              icon={<Grid3X3 className="w-5 h-5" />}
               isCollapsed={isCollapsed}
             />
-            <SidebarLink 
-              to="/reports" 
-              label="Booking Reports" 
-              icon={<Users className="w-5 h-5" />} 
+            <SidebarLink
+              to="/reports"
+              label="Booking Reports"
+              icon={<Users className="w-5 h-5" />}
               isCollapsed={isCollapsed}
             />
-            <SidebarLink 
-              to="/locations" 
-              label="Locations" 
-              icon={<MapPin className="w-5 h-5" />} 
+            <SidebarLink
+              to="/locations"
+              label="Locations"
+              icon={<MapPin className="w-5 h-5" />}
               isCollapsed={isCollapsed}
             />
-            
+
             {/* Divider */}
-            <div className={`h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent my-4 ${isCollapsed ? "mx-1" : ""}`} />
-            
-            <SidebarLink 
-              to="/settings" 
-              label="Settings" 
-              icon={<Settings className="w-5 h-5" />} 
+            <div
+              className={`h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent my-4 ${isCollapsed ? "mx-1" : ""}`}
+            />
+
+            <SidebarLink
+              to="/settings"
+              label="Settings"
+              icon={<Settings className="w-5 h-5" />}
               isCollapsed={isCollapsed}
             />
           </nav>
 
           {/* Footer/User Section */}
-          <div className={`p-4 border-t border-gray-200 ${isCollapsed ? "px-2" : ""}`}>
-            <div className={`flex items-center ${isCollapsed ? "justify-center" : "justify-between"}`}>
+          <div
+            className={`p-4 border-t border-gray-200 ${isCollapsed ? "px-2" : ""}`}
+          >
+            <div
+              className={`flex items-center ${isCollapsed ? "justify-center" : "justify-between"}`}
+            >
               {!isCollapsed && (
                 <>
                   <div className="flex items-center space-x-3">
@@ -170,7 +184,10 @@ function Sidebar({ isOpen, onClose, isCollapsed, onCollapse }) {
                     </div>
                   </div>
                   <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                    <LogOut onClick={()=> logout()} className="w-4 h-4 text-gray-500" />
+                    <LogOut
+                      onClick={() => logout()}
+                      className="w-4 h-4 text-gray-500"
+                    />
                   </button>
                 </>
               )}
@@ -189,9 +206,10 @@ function Sidebar({ isOpen, onClose, isCollapsed, onCollapse }) {
 
 function SidebarLink({ to, label, icon, isCollapsed }) {
   const location = useLocation();
-  const isActive = location.pathname === to || 
-                   (to !== '/' && location.pathname.startsWith(to));
-  
+  const isActive =
+    location.pathname === to ||
+    (to !== "/" && location.pathname.startsWith(to));
+
   return (
     <Link
       to={to}
@@ -201,40 +219,46 @@ function SidebarLink({ to, label, icon, isCollapsed }) {
         font-medium
         transition-all duration-300 ease-out
         group
-        ${isActive 
-          ? 'bg-gradient-to-r from-green-50 to-blue-50 text-green-700 shadow-sm' 
-          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+        ${
+          isActive
+            ? "bg-gradient-to-r from-green-50 to-blue-50 text-green-700 shadow-sm"
+            : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
         }
-        ${isCollapsed ? 'justify-center' : ''}
+        ${isCollapsed ? "justify-center" : ""}
       `}
     >
       {/* Active indicator */}
       {isActive && (
         <div className="fixed left-0 w-1 h-8 bg-gradient-to-b from-green-500 to-blue-500 rounded-r-full" />
       )}
-      
+
       {/* Icon */}
-      <div className={`
+      <div
+        className={`
         transition-all duration-300
-        ${isActive 
-          ? 'text-green-600 scale-110' 
-          : 'text-gray-500 group-hover:text-gray-700 group-hover:scale-110'
+        ${
+          isActive
+            ? "text-green-600 scale-110"
+            : "text-gray-500 group-hover:text-gray-700 group-hover:scale-110"
         }
-      `}>
+      `}
+      >
         {icon}
       </div>
-      
+
       {/* Label with slide-in animation */}
       {!isCollapsed && (
-        <span className={`
+        <span
+          className={`
           ml-3 transition-all duration-300
-          ${isActive ? 'font-semibold' : ''}
+          ${isActive ? "font-semibold" : ""}
           whitespace-nowrap overflow-hidden
-        `}>
+        `}
+        >
           {label}
         </span>
       )}
-      
+
       {/* Tooltip for collapsed state */}
       {isCollapsed && (
         <div className="fixed left-full ml-4 px-2 py-1 bg-gray-900 text-white text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">

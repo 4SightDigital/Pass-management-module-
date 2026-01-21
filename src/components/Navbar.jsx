@@ -1,5 +1,6 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "./AuthContext";
 
 const Navbar = ({
   sidebarOpen,
@@ -8,15 +9,20 @@ const Navbar = ({
 }) => {
   const location = useLocation();
 
+  const { logout } = useAuth()
+
   return (
-    <nav className={`fixed w-full top-0 z-40 bg-white border-b border-gray-200 shadow-sm
+    <nav
+      className={`fixed w-full top-0 z-40 bg-white border-b border-gray-200 shadow-sm
   transition-all duration-300
-  ${isSidebarCollapsed
-    ? "md:left-20 md:w-[calc(100%-5rem)]"
-    : "md:left-64 md:w-[calc(100%-16rem)]"
+  ${
+    isSidebarCollapsed
+      ? "md:left-20 md:w-[calc(100%-5rem)]"
+      : "md:left-64 md:w-[calc(100%-16rem)]"
   }
-`}>
-    <div className="px-4 sm:px-6 lg:px-8">
+`}
+    >
+      <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Left Section */}
           <div className="flex items-center">
@@ -160,7 +166,12 @@ const Navbar = ({
                   Settings
                 </Link>
                 <div className="border-t border-gray-200 my-1"></div>
-                <button className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                <button
+                  onClick={() => {
+                    logout();
+                  }}
+                  className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                >
                   <svg
                     className="w-4 h-4 mr-3"
                     fill="none"

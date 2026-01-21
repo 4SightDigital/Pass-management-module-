@@ -1,7 +1,7 @@
 import React from "react";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { loginUser, getCurrentUser } from "../api/auth.api";
+import { loginUser, getCurrentUser, logoutUser } from "../api/auth.api";
 
 export const AuthContext = createContext(null);
 
@@ -12,11 +12,19 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const fetchUser = async () => {
+    try {
+      const res = await getCurrentUser();
+      setUser(res.data);
+    } catch (err) {
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    getCurrentUser()
-      .then(res => setUser(res.data))
-      .catch(() => setUser(null))
-      .finally(() => setLoading(false));
+    fetchUser();
   }, []);
 
   const login = async (credentials, redirectTo = "/booking") => {
@@ -24,23 +32,29 @@ export function AuthProvider({ children }) {
     try {
       await loginUser(credentials);
       
-
-      await new Promise((res) => setTimeout(res, 50));
-
+      // Fetch user immediately after login
+      await fetchUser();
       
-      const res = await getCurrentUser();
-      setUser(res.data);
       navigate(redirectTo);
     } catch (err) {
-      console.log("eeeeeeeeorrrrr", err)
-      setError("Invalid credentials");
+      console.log("Login error:", err);
+      setError(err.response?.data?.message || "Invalid credentials");
       setUser(null);
     }
   };
 
   const logout = async (redirectTo = "/login") => {
-    setUser(null);
-    navigate(redirectTo);
+    try {
+      // Call logout API if you have one
+      await logoutUser();
+      
+    } catch (err) {
+      console.log("Logout error:", err);
+    } finally {
+      setUser(null);
+      localStorage.clear(); // Clear any stored data
+      navigate(redirectTo);
+    }
   };
 
   return (

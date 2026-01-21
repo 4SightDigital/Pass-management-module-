@@ -5,14 +5,10 @@ import { useNavigate } from "react-router-dom";
 import { formatDateTimeSimple, toIso, fromIso } from "../utils/fileUtils";
 import SearchBar from "../components/search/SearchBar";
 
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-
 const Events = () => {
   const venues = useVenueStore((state) => state.venues);
   const events = useVenueStore((state) => state.events);
   const addEvent = useVenueStore((state) => state.addEvent);
-  const fetchEvents = useVenueStore((state) => state.fetchEvents);
   const updateEvent = useVenueStore((state) => state.updateEvent);
   const deleteEvent = useVenueStore((state) => state.deleteEvent);
 
@@ -569,7 +565,7 @@ const Events = () => {
                                   required
                                 />
                               </td>
-                              <td className="px-6 py-4">
+                              <td className="px-4 py-4">
                                 <select
                                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
                                   value={eventEditData.venue || ""}
@@ -590,10 +586,10 @@ const Events = () => {
                                 </select>
                               </td>
                               <td className="px-6 py-4">
-                                <div className="space-y-2">
+                                <div className="">
                                   <input
                                     type="datetime-local"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                                    className="w-2/3 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
                                     value={eventEditData.start_datetime || ""}
                                     onChange={(e) =>
                                       setEventEditData({
@@ -605,7 +601,7 @@ const Events = () => {
                                   />
                                   <input
                                     type="datetime-local"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                                    className="w-2/3 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
                                     value={eventEditData.end_datetime || ""}
                                     min={eventEditData.start_datetime || ""}
                                     onChange={(e) =>
@@ -695,7 +691,7 @@ const Events = () => {
                               </td>
                               <td className="px-6 py-4">
                                 <div className="text-sm text-gray-900">
-                                  {event.venue_name}
+                                  {event.venue}
                                 </div>
                               </td>
                               <td className="px-6 py-4">

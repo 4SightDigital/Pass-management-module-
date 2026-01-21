@@ -19,7 +19,7 @@ import Navbar from "./components/Navbar";
 import BookingReports from "./pages/BookingReports";
 import LoginPage from "./pages/LoginPage";
 import ProtectedRoute from "./components/ProtectedRoute";
-import useAuth from "./hooks/useAuth";
+import { useAuth } from "./components/AuthContext";
 import NotFoundPage from "./components/NotFoundPage";
 import { AuthProvider } from "./components/AuthContext";
 

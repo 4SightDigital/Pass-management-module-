@@ -6,7 +6,12 @@ import {
   updateVenue,
 } from "../api/venues.api";
 import { getVenueHierarchy, saveVenueHierarchy } from "../api/category.api";
-import { createEvent, deleteEvent, getEvents, updateEvent } from "../api/events.api";
+import {
+  createEvent,
+  deleteEvent,
+  getEvents,
+  updateEvent,
+} from "../api/events.api";
 
 const useVenueStore = create((set) => ({
   venues: [],
@@ -85,125 +90,103 @@ const useVenueStore = create((set) => ({
     const res = await updateVenue(id, data);
     set((state) => ({
       venues: state.venues.map((v) =>
-        v.id === id ? { ...v, ...res.data } : v
+        v.id === id ? { ...v, ...res.data } : v,
       ),
     }));
   },
   updateEvent: async (id, data) => {
     const res = await updateEvent(id, data);
     set((state) => ({
-      events: state.events.map((eve)=>
-      eve.id === id ? {...eve, ...res.data}: eve)
-    }))
-  }
-  ,
+      events: state.events.map((eve) =>
+        eve.id === id ? { ...eve, ...res.data } : eve,
+      ),
+    }));
+  },
   deleteEvent: async (id) => {
-    await deleteEvent(id)
-    set((state)=> ({
-     events: state.events.filter((eve) => eve.id !== id)
-    }))
-  }
-  ,
+    await deleteEvent(id);
+    set((state) => ({
+      events: state.events.filter((eve) => eve.id !== id),
+    }));
+  },
   // categories of venues
-
   fetchVenueHierarchy: async (venueId) => {
     try {
-      set({ loading: true });
-
-      const res = await getVenueHierarchy(venueId);
-
+      const response = await getVenueHierarchy(venueId);
       set((state) => ({
         venues: state.venues.map((v) =>
           v.id === venueId
-            ? {
-                ...v,
-                seating: res.data.seating || [],
-              }
-            : v
+            ? { ...v, seating: response.data.categories || [] }
+            : v,
         ),
-        loading: false,
       }));
     } catch (err) {
-      console.error(err);
-      set({
-        error: "Failed to load seating hierarchy",
-        loading: false,
-      });
+      console.error("Failed to fetch venue hierarchy:", err);
     }
   },
 
-  saveVenueHierarchyToBackend: async (venueId) => {
-    try {
-      set({ loading: true });
-
-      const venue = useVenueStore
-        .getState()
-        .venues.find((v) => v.id === venueId);
-
-      if (!venue) return;
-
-      await saveVenueHierarchy(venueId, {
-        seating: venue.seating,
-      });
-
-      set({ loading: false });
-    } catch (err) {
-      console.error(err);
-      set({
-        error: "Failed to save seating hierarchy",
-        loading: false,
-      });
-      throw err;
-    }
-  },
-
-  addCategoryToVenue: (venueId, categoryName, categoryTotalSeats) => {
+  // Add category to venue
+  addCategoryToVenue: (venueId, name, seats) => {
     set((state) => ({
       venues: state.venues.map((v) =>
         v.id === venueId
           ? {
               ...v,
               seating: [
-                ...v.seating,
+                ...(v.seating || []),
                 {
                   id: crypto.randomUUID(),
-                  categoryName,
-                  categoryTotalSeats,
-                  subCategories: [],
+                  name,
+                  type: "category",
+                  seats,
+                  children: [],
                 },
               ],
             }
-          : v
+          : v,
       ),
     }));
   },
 
-  // sub categories of categories
-  addSubCategoryToCategory: (venueId, categoryId, subCategory) => {
+  // Add subcategory to a category
+  addSubCategoryToCategory: (venueId, categoryId, sub) => {
     set((state) => ({
-      venues: state.venues.map((v) =>
-        v.id === venueId
-          ? {
-              ...v,
-              seating: v.seating.map((c) =>
-                c.id === categoryId
-                  ? {
-                      ...c,
-                      subCategories: [
-                        ...c.subCategories,
-                        {
-                          id: crypto.randomUUID(),
-                          name: subCategory.name,
-                          seats: subCategory.seats,
-                        },
-                      ],
-                    }
-                  : c
-              ),
-            }
-          : v
-      ),
+      venues: state.venues.map((v) => {
+        if (v.id !== venueId) return v;
+        return {
+          ...v,
+          seating: v.seating.map((cat) =>
+            cat.id === categoryId
+              ? {
+                  ...cat,
+                  children: [
+                    ...cat.children,
+                    {
+                      id: crypto.randomUUID(),
+                      name: sub.name,
+                      type: "subcategory",
+                      seats: sub.seats,
+                      price: sub.price || 0,
+                      children: [],
+                    },
+                  ],
+                }
+              : cat,
+          ),
+        };
+      }),
     }));
+  },
+
+  // Save hierarchy to backend
+  saveVenueHierarchyToBackend: async (venueId) => {
+    try {
+      const venue = get().venues.find((v) => v.id === venueId);
+      if (!venue) return;
+      await saveVenueHierarchy(venueId, { categories: venue.seating });
+      console.log("Venue hierarchy saved successfully!");
+    } catch (err) {
+      console.error("Failed to save venue hierarchy:", err);
+    }
   },
 
   // EVENTS    slice begins hereee=============================================

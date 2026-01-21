@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 // import { useNavigate } from 'react-router-dom';
 import logoDesign from "../assets/logoDesign.PNG";
-import useAuth from "../hooks/useAuth";
+import { useAuth } from "../components/AuthContext";
 
 const LoginPage = () => {
   //   const navigate = useNavigate();
@@ -135,7 +135,7 @@ const LoginPage = () => {
             {/* Email Field */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
+                Username
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -159,7 +159,7 @@ const LoginPage = () => {
                   value={formData.email}
                   onChange={handleChange}
                   className={`w-full pl-10 pr-4 py-3 border ${errors.email ? "border-red-300 focus:ring-red-500 focus:border-red-500" : "border-gray-300 focus:ring-emerald-500 focus:border-emerald-500"} rounded-xl focus:ring-2 focus:ring-opacity-50 outline-none transition-all duration-300`}
-                  placeholder="name@company.com"
+                  placeholder="Enter Your Userame"
                   disabled={isLoading}
                 />
               </div>
