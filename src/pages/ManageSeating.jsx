@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import useVenueStore from "../store/useVenueStore";
 import AddCategory from "../components/AddCategory";
 import AddSubCategory from "../components/AddSubCategory";
@@ -6,490 +6,656 @@ import AddSubCategory from "../components/AddSubCategory";
 const ManageSeating = () => {
   const {
     venues,
-    addCategoryToVenue,
-    addSubCategoryToCategory,
+    venueHierarchies,
     fetchVenueHierarchy,
-    saveVenueHierarchyToBackend,
+    addRootCategory,
+    addChildCategory,
+    saveHierarchyToBackend,
   } = useVenueStore();
 
   const [openVenueId, setOpenVenueId] = useState(null);
   const [expandedCategories, setExpandedCategories] = useState({});
+  const [validationErrors, setValidationErrors] = useState({});
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState({});
 
-  // Toggle category expansion
-  const toggleCategory = (venueId, categoryId) => {
+  const toggleCategory = (venueId, index) => {
+    const key = `${venueId}-${index}`;
     setExpandedCategories((prev) => ({
       ...prev,
-      [`${venueId}-${categoryId}`]: !prev[`${venueId}-${categoryId}`],
+      [key]: !prev[key],
     }));
   };
 
-  // Calculate total seats per venue
-  const getVenueTotalSeats = (venue) => {
-    return (
-      venue.seating?.reduce((total, cat) => total + (cat.seats || 0), 0) || 0
+  const getCategoryUsedSeats = (children = []) =>
+    children.reduce((sum, c) => sum + (c.seats || 0), 0);
+
+  // Get remaining seats for a category
+  const getRemainingSeats = (cat) => {
+    const usedSeats = getCategoryUsedSeats(cat.children);
+    return cat.seats - usedSeats;
+  };
+
+  // Check if category name is unique within venue
+  const isCategoryNameUnique = (venueId, categoryName, excludeIndex = null) => {
+    const hierarchy = venueHierarchies[venueId] || [];
+    return !hierarchy.some((cat, index) => 
+      index !== excludeIndex && cat.name.toLowerCase() === categoryName.toLowerCase()
     );
   };
 
-  // Calculate total subcategory seats per category
-  const getCategoryUsedSeats = (subCategories) => {
-    return subCategories.reduce((total, sub) => total + (sub.seats || 0), 0);
+  // Check if subcategory name is unique within parent category
+  const isSubcategoryNameUnique = (venueId, catIndex, subcategoryName, excludeSubIndex = null) => {
+    const hierarchy = venueHierarchies[venueId] || [];
+    const category = hierarchy[catIndex];
+    
+    if (!category || !category.children) return true;
+    
+    return !category.children.some((sub, index) => 
+      index !== excludeSubIndex && sub.name.toLowerCase() === subcategoryName.toLowerCase()
+    );
   };
 
+  // Validate all categories for a venue
+  const validateVenueHierarchy = (venueId) => {
+    const hierarchy = venueHierarchies[venueId] || [];
+    const errors = {};
+
+    // Check for duplicate category names
+    hierarchy.forEach((cat, catIndex) => {
+      const usedSeats = getCategoryUsedSeats(cat.children);
+      
+      // Check if total subcategory seats exceed parent seats
+      if (usedSeats > cat.seats) {
+        errors[`${venueId}-${catIndex}-seats`] = {
+          message: `Subcategories exceed parent seats by ${usedSeats - cat.seats}`,
+          overflow: usedSeats - cat.seats,
+        };
+      }
+
+      // Check for duplicate category names
+      const isUnique = isCategoryNameUnique(venueId, cat.name, catIndex);
+      if (!isUnique) {
+        errors[`${venueId}-${catIndex}-name`] = {
+          message: `Category name "${cat.name}" is already used in this venue`,
+          duplicate: true,
+        };
+      }
+
+      // Check for duplicate subcategory names
+      cat.children.forEach((sub, subIndex) => {
+        const isSubUnique = isSubcategoryNameUnique(venueId, catIndex, sub.name, subIndex);
+        if (!isSubUnique) {
+          errors[`${venueId}-${catIndex}-${subIndex}-name`] = {
+            message: `Subcategory name "${sub.name}" is already used in this category`,
+            duplicate: true,
+          };
+        }
+
+        // Check if subcategory seats exceed parent seats
+        if (sub.seats > cat.seats) {
+          errors[`${venueId}-${catIndex}-${subIndex}-seats`] = {
+            message: `Subcategory seats exceed parent category seats`,
+            overflow: true,
+          };
+        }
+      });
+    });
+
+    return errors;
+  };
+
+  // Check if venue has validation errors
+  const venueHasErrors = (venueId) => {
+    const errors = validateVenueHierarchy(venueId);
+    return Object.keys(errors).length > 0;
+  };
+
+  // Enhanced save function with validation and status handling
+  const handleSaveHierarchy = async (venueId) => {
+    // Clear previous save status
+    setSaveStatus((prev) => ({ ...prev, [venueId]: null }));
+    
+    const errors = validateVenueHierarchy(venueId);
+    
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      
+      // Scroll to first error
+      const firstErrorKey = Object.keys(errors)[0];
+      const element = document.querySelector(`[data-error="${firstErrorKey}"]`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+      
+      return;
+    }
+    
+    // Clear any previous errors
+    setValidationErrors({});
+    
+    try {
+      setIsSaving(true);
+      const result = await saveHierarchyToBackend(venueId);
+      
+      if (result.success) {
+        // Set success status
+        setSaveStatus((prev) => ({ 
+          ...prev, 
+          [venueId]: { 
+            type: 'success', 
+            message: 'Seating layout saved successfully!' 
+          }
+        }));
+        
+        // Close the venue accordion after successful save
+        setTimeout(() => {
+          setOpenVenueId(null);
+        }, 1500);
+        
+        // Clear success message after 5 seconds
+        setTimeout(() => {
+          setSaveStatus((prev) => ({ ...prev, [venueId]: null }));
+        }, 5000);
+        
+      } else {
+        // Set error status
+        setSaveStatus((prev) => ({ 
+          ...prev, 
+          [venueId]: { 
+            type: 'error', 
+            message: result.message || 'Failed to save seating layout. Please try again.' 
+          }
+        }));
+        
+        // Keep accordion open to show errors
+      }
+      
+    } catch (error) {
+      console.error("Save failed:", error);
+      setSaveStatus((prev) => ({ 
+        ...prev, 
+        [venueId]: { 
+          type: 'error', 
+          message: error.message || 'An unexpected error occurred. Please try again.' 
+        }
+      }));
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Clear errors when hierarchy changes
+  useEffect(() => {
+    setValidationErrors({});
+  }, [venueHierarchies]);
+
+  // Clear save status when accordion is closed
+  useEffect(() => {
+    if (!openVenueId && saveStatus[openVenueId]) {
+      setSaveStatus((prev) => ({ ...prev, [openVenueId]: null }));
+    }
+  }, [openVenueId, saveStatus]);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-4 md:p-6">
-      {/* Page Header */}
-      <div className="mb-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">
-              Manage Seating Layout
-            </h1>
-            <p className="text-gray-600">
-              Organize seating categories and subcategories for each venue
-            </p>
-          </div>
-          <div className="flex items-center space-x-2">
-            <div className="px-4 py-2 bg-gradient-to-r from-emerald-100 to-blue-100 rounded-xl">
-              <span className="text-sm font-medium text-gray-700">
-                {venues.length} Venue{venues.length !== 1 ? "s" : ""}
-              </span>
-            </div>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-6">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Manage Seating Layout</h1>
+          <p className="text-gray-600">Create and organize seating categories for your venues</p>
         </div>
 
-        {/* Statistics Summary */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
-            <div className="flex items-center">
-              <div className="w-10 h-10 bg-gradient-to-r from-emerald-100 to-emerald-50 rounded-lg flex items-center justify-center mr-3">
-                <svg
-                  className="w-5 h-5 text-emerald-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                  />
-                </svg>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Total Venues</p>
-                <p className="text-2xl font-bold text-gray-800">
-                  {venues.length}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
-            <div className="flex items-center">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-100 to-blue-50 rounded-lg flex items-center justify-center mr-3">
-                <svg
-                  className="w-5 h-5 text-blue-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-6A8.5 8.5 0 0012 3.5 8.5 8.5 0 003.5 12v6.5h17V12z"
-                  />
-                </svg>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Total Configured Seats</p>
-                <p className="text-2xl font-bold text-gray-800">
-                  {venues.reduce(
-                    (total, venue) => total + getVenueTotalSeats(venue),
-                    0,
-                  )}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
-            <div className="flex items-center">
-              <div className="w-10 h-10 bg-gradient-to-r from-purple-100 to-purple-50 rounded-lg flex items-center justify-center mr-3">
-                <svg
-                  className="w-5 h-5 text-purple-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
-                  />
-                </svg>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Total Categories</p>
-                <p className="text-2xl font-bold text-gray-800">
-                  {venues.reduce(
-                    (total, venue) => total + (venue.seating?.length || 0),
-                    0,
-                  )}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Venues Accordion */}
-      <div className="space-y-4">
         {venues.length === 0 ? (
-          <div className="bg-white rounded-2xl p-8 text-center shadow-sm border border-gray-200">
-            <div className="w-20 h-20 bg-gradient-to-r from-gray-100 to-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <svg
-                className="w-10 h-10 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                />
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 text-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-100 flex items-center justify-center">
+              <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
               </svg>
             </div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">
-              No Venues Added
-            </h3>
-            <p className="text-gray-600 mb-6">
-              Add venues first to configure their seating layout
-            </p>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No Venues Added</h3>
+            <p className="text-gray-500">Add venues to start creating seating layouts</p>
           </div>
         ) : (
-          venues.map((venue, index) => {
-            const isOpen = openVenueId === venue.id;
-            const venueTotalSeats = getVenueTotalSeats(venue);
-            const venueCapacity = venue.total_capacity || 0;
-            console.log("venuesss111", venue);
-            return (
-              <div
-                key={venue.id}
-                className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-200 transition-all duration-300 hover:shadow-xl"
-              >
-                {/* Venue Accordion Header */}
-                <button
-                  onClick={() => {
-                    const next = isOpen ? null : venue.id;
-                    setOpenVenueId(next);
-                    if (!isOpen && venue.seating.length === 0) {
-                      fetchVenueHierarchy(venue.id);
-                    }
-                  }}
-                  className="w-full flex items-center justify-between p-6 text-left hover:bg-gray-50 transition-colors duration-200"
-                >
-                  <div className="flex items-center space-x-4">
-                    <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-emerald-500 to-blue-500 rounded-xl text-white font-bold text-lg">
-                      {index + 1}
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-bold text-gray-800">
-                        {venue.name}
-                      </h3>
-                      <div className="flex items-center space-x-4 mt-1">
-                        <span className="text-sm text-gray-600">
-                          {venue.location}
-                        </span>
-                        <span className="text-sm px-2 py-1 bg-gray-100 rounded-md">
-                          {venue.venue_type || "No type specified"}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+          <div className="space-y-6">
+            {venues.map((venue, index) => {
+              const hierarchy = venueHierarchies[venue.id] || [];
+              const isOpen = openVenueId === venue.id;
+              const hasErrors = venueHasErrors(venue.id);
+              const venueSaveStatus = saveStatus[venue.id];
 
-                  <div className="flex items-center space-x-6">
-                    {/* Seat Statistics */}
-                    <div className="text-right hidden md:block">
-                      <div className="text-sm text-gray-500">
-                        Seat Configuration
+              return (
+                <div
+                  key={venue.id}
+                  className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-md"
+                >
+                  {/* Venue Header */}
+                  <button
+                    className="w-full p-6 flex justify-between items-center hover:bg-gray-50 transition-colors duration-200"
+                    onClick={() => {
+                      const next = isOpen ? null : venue.id;
+                      setOpenVenueId(next);
+
+                      if (!isOpen && !venueHierarchies[venue.id]) {
+                        fetchVenueHierarchy(venue.id);
+                      }
+                    }}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-100 to-blue-50 flex items-center justify-center">
+                        <span className="text-blue-700 font-bold text-lg">{index+1}</span>
                       </div>
-                      <div className="text-lg font-bold text-gray-800">
-                        {venueTotalSeats} / {venueCapacity}
+                      <div className="text-left">
+                        <h2 className="font-bold text-gray-900 text-lg">{venue.name}</h2>
+                        <div className="flex items-center gap-3 mt-1">
+                          <span className="text-sm text-gray-600">
+                            {hierarchy.length} categor{hierarchy.length === 1 ? 'y' : 'ies'}
+                          </span>
+                          <span className="text-gray-400">•</span>
+                          <span className={`text-sm font-medium px-2 py-1 rounded-full ${hasErrors ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                            {hasErrors ? 'Validation issues' : 'Ready to save'}
+                          </span>
+                          {venueSaveStatus && (
+                            <span className={`text-sm font-medium px-2 py-1 rounded-full ${
+                              venueSaveStatus.type === 'success' 
+                                ? 'bg-emerald-100 text-emerald-800 animate-pulse' 
+                                : 'bg-red-100 text-red-800'
+                            }`}>
+                              {venueSaveStatus.type === 'success' ? '✓ Saved' : '✗ Failed'}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden mt-1">
-                        <div
-                          className="h-full bg-gradient-to-r from-emerald-500 to-blue-500 transition-all duration-500"
-                          style={{
-                            width: `${venueCapacity ? (venueTotalSeats / venueCapacity) * 100 : 0}%`,
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm text-gray-500">
+                        {isOpen ? 'Collapse' : 'Expand'}
+                      </span>
+                      <span className={`text-gray-500 transform transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}>
+                        ▼
+                      </span>
+                    </div>
+                  </button>
+
+                  {/* Venue Body */}
+                  {isOpen && (
+                    <div className="p-6 border-t border-gray-100 bg-gray-50/30">
+                      {/* Save Status Message */}
+                      {venueSaveStatus && (
+                        <div className={`mb-6 p-4 rounded-xl ${
+                          venueSaveStatus.type === 'success' 
+                            ? 'bg-emerald-50 border border-emerald-200' 
+                            : 'bg-red-50 border border-red-200'
+                        } animate-fade-in`}>
+                          <div className="flex items-start gap-3">
+                            <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                              venueSaveStatus.type === 'success' 
+                                ? 'bg-emerald-100 text-emerald-600' 
+                                : 'bg-red-100 text-red-600'
+                            }`}>
+                              {venueSaveStatus.type === 'success' ? '✓' : '✗'}
+                            </div>
+                            <div className="flex-1">
+                              <h4 className={`font-medium ${
+                                venueSaveStatus.type === 'success' 
+                                  ? 'text-emerald-800' 
+                                  : 'text-red-800'
+                              } mb-1`}>
+                                {venueSaveStatus.type === 'success' ? 'Success!' : 'Error'}
+                              </h4>
+                              <p className={`text-sm ${
+                                venueSaveStatus.type === 'success' 
+                                  ? 'text-emerald-700' 
+                                  : 'text-red-700'
+                              }`}>
+                                {venueSaveStatus.message}
+                              </p>
+                              {venueSaveStatus.type === 'success' && (
+                                <p className="text-xs text-emerald-600 mt-2">
+                                  This panel will close automatically in a moment...
+                                </p>
+                              )}
+                            </div>
+                            <button
+                              onClick={() => setSaveStatus((prev) => ({ ...prev, [venue.id]: null }))}
+                              className="text-gray-400 hover:text-gray-600"
+                            >
+                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Add Root Category Section */}
+                      <div className="mb-8">
+                        <div className="flex items-center justify-between mb-4">
+                          <div>
+                            <h3 className="font-semibold text-gray-900 text-lg">Add Main Category</h3>
+                            <p className="text-sm text-gray-500 mt-1">Create primary seating sections (e.g., VIP, General)</p>
+                          </div>
+                          <span className="px-3 py-1 bg-blue-100 text-blue-700 text-sm font-medium rounded-full">
+                            Step 1
+                          </span>
+                        </div>
+                        <AddCategory
+                          existingCategories={hierarchy.map(cat => cat.name)}
+                          onAdd={(cat) => {
+                            // Check if category name is unique
+                            if (!isCategoryNameUnique(venue.id, cat.name)) {
+                              alert(`Category name "${cat.name}" is already used in this venue. Please choose a different name.`);
+                              return;
+                            }
+                            
+                            addRootCategory(venue.id, {
+                              ...cat,
+                              
+                            });
                           }}
                         />
                       </div>
-                    </div>
 
-                    {/* Accordion Icon */}
-                    <div
-                      className={`transform transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`}
-                    >
-                      <svg
-                        className="w-6 h-6 text-gray-500"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 9l-7 7-7-7"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-                </button>
-
-                {/* Venue Accordion Body */}
-                {isOpen && (
-                  <div className="px-6 pb-6 pt-2 border-t border-gray-200">
-                    {/* Venue Summary */}
-                    <div className="mb-6 p-4 bg-gradient-to-r from-emerald-50 to-blue-50 rounded-xl">
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                        <div>
-                          <h4 className="font-medium text-gray-800 mb-1">
-                            Venue Capacity Overview
-                          </h4>
-                          <div className="flex items-center space-x-4">
-                            <div className="flex items-center">
-                              <div className="w-3 h-3 bg-emerald-500 rounded-full mr-2"></div>
-                              <span className="text-sm text-gray-600">
-                                Configured: {venueTotalSeats} seats
-                              </span>
-                            </div>
-                            <div className="flex items-center">
-                              <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
-                              <span className="text-sm text-gray-600">
-                                Total Capacity: {venueCapacity} seats
-                              </span>
-                            </div>
+                      {/* Categories List */}
+                      {hierarchy.length === 0 ? (
+                        <div className="py-12 text-center border-2 border-dashed border-gray-300 rounded-xl bg-white/50">
+                          <div className="w-12 h-12 mx-auto mb-4 text-gray-400">
+                            <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                            </svg>
                           </div>
-                        </div>
-                        {venueCapacity > 0 && (
-                          <div className="text-right">
-                            <div className="text-2xl font-bold text-gray-800">
-                              {Math.round(
-                                (venueTotalSeats / venueCapacity) * 100,
-                              )}
-                              %
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              Capacity Utilized
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Add Category Section */}
-                    <div className="mb-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <h4 className="text-lg font-semibold text-gray-800">
-                          Seating Categories
-                        </h4>
-                        <span className="text-sm text-gray-500">
-                          {venue.seating?.length || 0} categorie
-                          {venue.seating?.length !== 1 ? "s" : ""}
-                        </span>
-                      </div>
-                      <AddCategory
-                        onAdd={(name, seats) => {
-                          addCategoryToVenue(venue.id, name, seats);
-                          saveVenueHierarchyToBackend(venue.id);
-                        }}
-                      />
-                    </div>
-
-                    {/* Categories List */}
-                    <div className="space-y-4">
-                      {venue.seating?.length === 0 ? (
-                        <div className="text-center py-8 bg-gray-50 rounded-xl">
-                          <svg
-                            className="w-12 h-12 text-gray-400 mx-auto mb-3"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={1.5}
-                              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                            />
-                          </svg>
-                          <p className="text-gray-500">
-                            No categories added yet
-                          </p>
-                          <p className="text-gray-400 text-sm mt-1">
-                            Add your first category above
-                          </p>
+                          <p className="text-gray-500 font-medium">No categories yet</p>
+                          <p className="text-sm text-gray-400 mt-1">Add your first category above</p>
                         </div>
                       ) : (
-                        venue.seating?.map((cat, catIndex) => {
-                          const isCategoryExpanded =
-                            expandedCategories[`${venue.id}-${cat.id}`];
-                          const usedSeats = getCategoryUsedSeats(cat.children);
-                          const availableSeats = cat.seats - usedSeats;
+                        <div className="space-y-6">
+                          <div className="flex items-center justify-between">
+                            <h3 className="font-semibold text-gray-900 text-lg">Categories</h3>
+                            <span className="px-3 py-1 bg-gray-100 text-gray-700 text-sm font-medium rounded-full">
+                              {hierarchy.length} total
+                            </span>
+                          </div>
+                          {console.log("hierarchysdsd",hierarchy)}
+                          {hierarchy.map((cat, catIndex) => {
+                            const key = `${venue.id}-${catIndex}`;
+                            const expanded = expandedCategories[key];
+                            const usedSeats = getCategoryUsedSeats(cat.children);
+                            const availableSeats = cat.seats - usedSeats;
+                            const seatError = validationErrors[`${venue.id}-${catIndex}-seats`];
+                            const nameError = validationErrors[`${venue.id}-${catIndex}-name`];
+                            const isOverflow = usedSeats > cat.seats;
+                            const remainingSeats = getRemainingSeats(cat);
 
-                          return (
-                            <div
-                              key={cat.id}
-                              className="bg-gray-50 border border-gray-200 rounded-xl p-5 hover:border-gray-300 transition-colors duration-200"
-                            >
-                              {/* Category Header */}
-                              <div className="flex justify-between items-start mb-4">
-                                <div className="flex items-center space-x-3">
-                                  <div className="flex items-center justify-center w-8 h-8 bg-gradient-to-r from-emerald-500 to-blue-500 rounded-lg text-white font-medium">
-                                    {catIndex + 1}
-                                  </div>
-                                  <div>
-                                    <h5 className="font-bold text-gray-800">
-                                      {cat.name}
-                                    </h5>
-                                    <div className="flex items-center space-x-4 mt-1">
-                                      <span className="text-sm text-gray-600">
-                                        Total: {cat.seats} seats
-                                      </span>
-                                      <span
-                                        className={`text-sm px-2 py-1 rounded-md ${
-                                          availableSeats >= 0
-                                            ? "bg-emerald-100 text-emerald-800"
-                                            : "bg-red-100 text-red-800"
-                                        }`}
-                                      >
-                                        {availableSeats >= 0
-                                          ? `${availableSeats} available`
-                                          : `${-availableSeats} overflow`}
-                                      </span>
+                            return (
+                              <div
+                                key={catIndex}
+                                data-error={`${venue.id}-${catIndex}`}
+                                className={`bg-white rounded-xl border ${seatError || nameError ? 'border-red-300 bg-red-50/30' : 'border-gray-200'} p-5 shadow-sm transition-all duration-200`}
+                              >
+                                {/* Category Header */}
+                                <div className="flex justify-between items-start mb-4">
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-3 mb-3">
+                                      <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">
+                                        <span className="text-blue-700 font-bold">C{catIndex + 1}</span>
+                                      </div>
+                                      <div>
+                                        <div className="flex items-center gap-2">
+                                          <h4 className="font-semibold text-gray-900">{cat.name}</h4>
+                                          {nameError && (
+                                            <span className="text-xs text-red-600 font-medium bg-red-100 px-2 py-0.5 rounded-full">
+                                              Duplicate
+                                            </span>
+                                          )}
+                                        </div>
+                                        <div className="flex items-center gap-3 mt-1">
+                                          <span className="text-sm text-gray-600">
+                                            {cat.children.length} subcategor{cat.children.length === 1 ? 'y' : 'ies'}
+                                          </span>
+                                          <span className="text-gray-400">•</span>
+                                          <span className="text-sm font-medium text-gray-700">
+                                            {cat.seats} total seats
+                                          </span>
+                                        </div>
+                                      </div>
                                     </div>
-                                  </div>
-                                </div>
-                                <button
-                                  onClick={() =>
-                                    toggleCategory(venue.id, cat.id)
-                                  }
-                                  className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
-                                >
-                                  <svg
-                                    className={`w-5 h-5 text-gray-500 transition-transform ${isCategoryExpanded ? "rotate-180" : ""}`}
-                                    fill="none"
-                                    stroke="currentColor"
-                                    viewBox="0 0 24 24"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M19 9l-7 7-7-7"
-                                    />
-                                  </svg>
-                                </button>
-                              </div>
 
-                              {/* Category Progress Bar */}
-                              {cat.seats > 0 && (
-                                <div className="mb-4">
-                                  <div className="flex justify-between text-sm text-gray-600 mb-1">
-                                    <span>Subcategory seats: {usedSeats}</span>
-                                    <span>Available: {availableSeats}</span>
+                                    {/* Seat Status */}
+                                    <div className="flex flex-wrap gap-4 mt-4">
+                                      <div className="flex items-center gap-2">
+                                        <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
+                                        <span className="text-sm text-gray-700">
+                                          {Math.max(availableSeats, 0)} available
+                                        </span>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <div className="w-3 h-3 rounded-full bg-amber-500"></div>
+                                        <span className="text-sm text-gray-700">{usedSeats} used</span>
+                                      </div>
+                                      {isOverflow && (
+                                        <div className="flex items-center gap-2">
+                                          <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse"></div>
+                                          <span className="text-sm font-medium text-red-600">
+                                            {usedSeats - cat.seats} overflow
+                                          </span>
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    {/* Error Messages */}
+                                    {(seatError || nameError) && (
+                                      <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                                        <div className="flex items-center gap-2 text-red-700">
+                                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                          </svg>
+                                          <span className="text-sm font-medium">
+                                            {seatError ? seatError.message : nameError.message}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    )}
                                   </div>
-                                  <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                                    <div
-                                      className="h-full bg-gradient-to-r from-emerald-500 to-blue-500 transition-all duration-500"
-                                      style={{
-                                        width: `${(usedSeats / cat.seats) * 100}%`,
+
+                                  {cat.children.length > 0 && (
+                                    <button
+                                      onClick={() => toggleCategory(venue.id, catIndex)}
+                                      className="flex items-center gap-2 text-gray-600 hover:text-gray-900 px-3 py-1.5 rounded-lg hover:bg-gray-100 transition-colors duration-150"
+                                    >
+                                      <span className="text-sm font-medium">
+                                        {expanded ? 'Hide' : 'Show'} Subcategories
+                                      </span>
+                                      <span className={`transform transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}>
+                                        ▼
+                                      </span>
+                                    </button>
+                                  )}
+                                </div>
+
+                                {/* Add Subcategory */}
+                                <div className="mt-5 pt-5 border-t border-gray-100">
+                                  <div className="flex items-center justify-between mb-4">
+                                    <div>
+                                      <h5 className="font-medium text-gray-900">Add Subcategory</h5>
+                                      <p className="text-sm text-gray-500 mt-1">
+                                        {remainingSeats > 0 
+                                          ? `${remainingSeats} seats available for subcategories`
+                                          : 'No seats available for new subcategories'
+                                        }
+                                      </p>
+                                    </div>
+                                    <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full">
+                                      Step 2
+                                    </span>
+                                  </div>
+                                  
+                                  {remainingSeats <= 0 ? (
+                                    <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                                      <div className="flex items-center gap-3 text-amber-800">
+                                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                          <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                        </svg>
+                                        <div>
+                                          <p className="font-medium">Category Filled</p>
+                                          <p className="text-sm mt-1">All seats have been allocated to existing subcategories.</p>
+                                          {/* <p className="text-sm mt-1">
+                                            Increase parent seats to {cat.seats + 1} or reduce existing subcategory seats.
+                                          </p> */}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <AddSubCategory
+                                      parentSeats={cat.seats}
+                                      usedSeats={usedSeats}
+                                      maxSeats={remainingSeats}
+                                      existingSubcategories={cat.children.map(sub => sub.name)}
+                                      onAdd={(sub) => {
+                                        // Prevent adding if it would exceed parent seats
+                                        if (sub.seats > remainingSeats) {
+                                          alert(`Cannot add subcategory: Only ${remainingSeats} seats available`);
+                                          return;
+                                        }
+
+                                        // Check if subcategory name is unique
+                                        if (!isSubcategoryNameUnique(venue.id, catIndex, sub.name)) {
+                                          alert(`Subcategory name "${sub.name}" is already used in this category. Please choose a different name.`);
+                                          return;
+                                        }
+                                        
+                                        addChildCategory(
+                                          venue.id,
+                                          [catIndex],
+                                          {
+                                            ...sub,
+                                            category_type: "subsection",
+                                            children: [],
+                                          }
+                                        );
                                       }}
                                     />
-                                  </div>
+                                  )}
+                                  
+                                  {isOverflow && (
+                                    <p className="text-sm text-red-600 mt-2 font-medium">
+                                      ⚠️ Reduce subcategory seats or increase parent seats to fix overflow
+                                    </p>
+                                  )}
                                 </div>
-                              )}
 
-                              {/* Add Subcategory */}
-                              <div className="mb-4">
-                                <AddSubCategory
-                                  maxSeats={availableSeats}
-                                  onAdd={(sub) => {
-                                    addSubCategoryToCategory(
-                                      venue.id,
-                                      catIndex,
-                                      sub,
-                                    );
-
-                                    saveVenueHierarchyToBackend(venue.id);
-                                  }}
-                                />
-                              </div>
-
-                              {/* Subcategory List */}
-                              {isCategoryExpanded &&
-                                cat.children.length > 0 && (
-                                  <div className="mt-4">
-                                    <div className="flex items-center justify-between mb-3">
-                                      <h6 className="font-medium text-gray-700">
-                                        Subcategories
-                                      </h6>
-                                      <span className="text-sm text-gray-500">
-                                        {cat.children.length} subcategorie
-                                        {cat.children.length !== 1 ? "s" : ""}
+                                {/* Subcategories List */}
+                                {expanded && cat.children.length > 0 && (
+                                  <div className="mt-6 pt-6 border-t border-gray-100">
+                                    <div className="flex items-center justify-between mb-4">
+                                      <h5 className="font-medium text-gray-900">Subcategories</h5>
+                                      <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full">
+                                        {cat.children.length} items
                                       </span>
                                     </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                      {cat.children.map((s, subIndex) => (
-                                        <div
-                                          key={s.id}
-                                          className="bg-white border border-gray-200 rounded-lg p-4 hover:border-emerald-300 transition-colors duration-200"
-                                        >
-                                          <div className="flex justify-between items-start">
-                                            <div className="flex items-center space-x-3">
-                                              <div className="flex items-center justify-center w-6 h-6 bg-gradient-to-r from-blue-100 to-emerald-100 rounded-lg text-gray-700 font-medium text-sm">
-                                                {subIndex + 1}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                      {cat.children.map((sub, subIndex) => {
+                                        const seatError = validationErrors[`${venue.id}-${catIndex}-${subIndex}-seats`];
+                                        const nameError = validationErrors[`${venue.id}-${catIndex}-${subIndex}-name`];
+                                        const hasError = seatError || nameError;
+                                        
+                                        return (
+                                          <div
+                                            key={subIndex}
+                                            data-error={`${venue.id}-${catIndex}-${subIndex}`}
+                                            className={`p-4 rounded-lg border ${hasError ? 'border-red-300 bg-red-50/50' : 'border-gray-200 bg-gray-50'} hover:border-gray-300 transition-colors duration-150`}
+                                          >
+                                            <div className="flex items-start gap-3 mb-2">
+                                              <div className="w-8 h-8 rounded-md bg-gray-200 flex items-center justify-center flex-shrink-0">
+                                                <span className="text-gray-700 font-bold text-sm">C{catIndex + 1}.{subIndex + 1}</span>
                                               </div>
-                                              <div>
-                                                <div className="font-medium text-gray-800">
-                                                  {s.name}
-                                                </div>
-                                                <div className="text-sm text-gray-600 mt-1">
-                                                  Price: ${s.price || "0"} •
-                                                  Seats: {s.seats}
+                                              <div className="flex-1">
+                                                <div className="flex justify-between items-start">
+                                                  <div className="flex items-center gap-2">
+                                                    <span className="font-medium text-gray-900 truncate">{sub.name}</span>
+                                                    {nameError && (
+                                                      <span className="text-xs text-red-600 font-medium bg-red-100 px-2 py-0.5 rounded-full">
+                                                        Duplicate
+                                                      </span>
+                                                    )}
+                                                  </div>
+                                                  <span className="text-sm font-semibold text-gray-700">{sub.seats} seats</span>
                                                 </div>
                                               </div>
                                             </div>
-                                            <div className="text-right">
-                                              <div className="text-lg font-bold text-emerald-600">
-                                                {s.seats}
+                                            {hasError && (
+                                              <div className="mt-2 text-xs text-red-600 font-medium flex items-center gap-1">
+                                                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                                </svg>
+                                                {seatError ? seatError.message : nameError.message}
                                               </div>
-                                              <div className="text-xs text-gray-500">
-                                                seats
-                                              </div>
-                                            </div>
+                                            )}
                                           </div>
-                                        </div>
-                                      ))}
+                                        );
+                                      })}
                                     </div>
                                   </div>
                                 )}
-                            </div>
-                          );
-                        })
+                              </div>
+                            );
+                          })}
+                        </div>
                       )}
+
+                      {/* Save Button Section */}
+                      <div className="mt-8 pt-6 border-t border-gray-200">
+                        <div className={`p-4 rounded-xl ${hasErrors ? 'bg-red-50 border border-red-200' : 'bg-emerald-50 border border-emerald-200'} mb-6`}>
+                          <div className="flex items-start gap-3">
+                            <div className={`w-6 h-6 rounded-full flex items-center justify-center ${hasErrors ? 'bg-red-100 text-red-600' : 'bg-emerald-100 text-emerald-600'}`}>
+                              {hasErrors ? '⚠️' : '✓'}
+                            </div>
+                            <div>
+                              <h4 className={`font-medium ${hasErrors ? 'text-red-800' : 'text-emerald-800'} mb-1`}>
+                                {hasErrors ? 'Validation Required' : 'Ready to Save'}
+                              </h4>
+                              <p className={`text-sm ${hasErrors ? 'text-red-700' : 'text-emerald-700'}`}>
+                                {hasErrors 
+                                  ? 'Please fix the validation issues before saving. Check for duplicate names and seat allocation problems.'
+                                  : 'All categories are properly configured. You can save the seating layout.'
+                                }
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <p className="text-sm text-gray-600">Save this venue's seating configuration</p>
+                            <p className="text-xs text-gray-500 mt-1">This will update the seating layout for {venue.name}</p>
+                          </div>
+                          <button
+                            onClick={() => handleSaveHierarchy(venue.id)}
+                            disabled={isSaving || hasErrors}
+                            className={`px-6 py-3 rounded-lg font-medium transition-all duration-200 ${hasErrors || isSaving
+                              ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                              : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-sm hover:shadow'
+                            }`}
+                          >
+                            {isSaving ? (
+                              <span className="flex items-center gap-2">
+                                <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                </svg>
+                                Saving...
+                              </span>
+                            ) : (
+                              'Save Seating Layout'
+                            )}
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            );
-          })
+                  )}
+                </div>
+              );
+            })}
+          </div>
         )}
       </div>
     </div>

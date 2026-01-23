@@ -27,7 +27,7 @@ function BookTickets() {
   // Get selected event and venue data
   const event = events.find((e) => e.id === selectedEvent);
   const venue = event ? venues.find((v) => v.id === event.venueId) : null;
-  const selectedCategory = venue?.seating?.find((c) => c.id === categoryId);
+  const selectedCategory = venue?.hierarchy?.find((c) => c.id === categoryId);
   const selectedSubCategory = selectedCategory?.subCategories?.find(
     (sc) => sc.id === subCategoryId
   );
@@ -483,7 +483,7 @@ function BookTickets() {
                       }`}
                     >
                       <option value="">Select seat category</option>
-                      {venue?.seating?.map((cat) => (
+                      {venue?.hierarchy?.map((cat) => (
                         <option key={cat.id} value={cat.id}>
                           {cat.categoryName}
                         </option>

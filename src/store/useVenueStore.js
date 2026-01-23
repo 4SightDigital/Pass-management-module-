@@ -12,8 +12,13 @@ import {
   getEvents,
   updateEvent,
 } from "../api/events.api";
+// import { frontendToBackendHierarchy } from "../utils/mapper/hierachyMapper";
+import api from "../api/axios"; // axios instance
+import { backendToFrontendHierarchy } from "../utils/mapper/hierachyMapper";
+import venueHierarchySlice from "./venueHierarchySlice";
 
-const useVenueStore = create((set) => ({
+const useVenueStore = create((set, get) => ({
+  ...venueHierarchySlice(set, get),
   venues: [],
   events: [],
   loading: false,
@@ -42,7 +47,7 @@ const useVenueStore = create((set) => ({
 
       // backend response becomes source of truth
       set((state) => ({
-        venues: [...state.venues, { ...res.data, seating: [] }],
+        venues: [...state.venues, { ...res.data, hierarchy: [] }],
         loading: false,
       }));
     } catch (err) {
@@ -109,84 +114,71 @@ const useVenueStore = create((set) => ({
     }));
   },
   // categories of venues
+
   fetchVenueHierarchy: async (venueId) => {
-    try {
-      const response = await getVenueHierarchy(venueId);
-      set((state) => ({
-        venues: state.venues.map((v) =>
-          v.id === venueId
-            ? { ...v, seating: response.data.categories || [] }
-            : v,
-        ),
-      }));
-    } catch (err) {
-      console.error("Failed to fetch venue hierarchy:", err);
-    }
+    const res = await api.get(`/venues/${venueId}`);
+
+    console.log("dataaaa for hierarchy", res.data.hierarchy);
+
+    // Backend already returns nested hierarchy
+    const hierarchy = res.data.hierarchy;
+
+    set((state) => ({
+      venueHierarchies: {
+        ...state.venueHierarchies,
+        [venueId]: hierarchy,
+      },
+    }));
   },
 
-  // Add category to venue
-  addCategoryToVenue: (venueId, name, seats) => {
+  // Add subcategory to a category
+  addSubCategoryToCategory: (venueId, parentId, sub) => {
+    const addRecursive = (nodes) =>
+      nodes.map((node) => {
+        if (node.id === parentId) {
+          return {
+            ...node,
+            children: [
+              ...(node.children || []),
+              {
+                name: sub.name,
+                category_type: "subcategory",
+                seats: sub.seats,
+                children: [],
+              },
+            ],
+          };
+        }
+
+        if (node.children?.length) {
+          return {
+            ...node,
+            children: addRecursive(node.children),
+          };
+        }
+
+        return node;
+      });
+
     set((state) => ({
       venues: state.venues.map((v) =>
         v.id === venueId
-          ? {
-              ...v,
-              seating: [
-                ...(v.seating || []),
-                {
-                  id: crypto.randomUUID(),
-                  name,
-                  type: "category",
-                  seats,
-                  children: [],
-                },
-              ],
-            }
+          ? { ...v, hierarchy: addRecursive(v.hierarchy || []) }
           : v,
       ),
     }));
   },
 
-  // Add subcategory to a category
-  addSubCategoryToCategory: (venueId, categoryId, sub) => {
-    set((state) => ({
-      venues: state.venues.map((v) => {
-        if (v.id !== venueId) return v;
-        return {
-          ...v,
-          seating: v.seating.map((cat) =>
-            cat.id === categoryId
-              ? {
-                  ...cat,
-                  children: [
-                    ...cat.children,
-                    {
-                      id: crypto.randomUUID(),
-                      name: sub.name,
-                      type: "subcategory",
-                      seats: sub.seats,
-                      price: sub.price || 0,
-                      children: [],
-                    },
-                  ],
-                }
-              : cat,
-          ),
-        };
-      }),
-    }));
-  },
-
   // Save hierarchy to backend
   saveVenueHierarchyToBackend: async (venueId) => {
-    try {
-      const venue = get().venues.find((v) => v.id === venueId);
-      if (!venue) return;
-      await saveVenueHierarchy(venueId, { categories: venue.seating });
-      console.log("Venue hierarchy saved successfully!");
-    } catch (err) {
-      console.error("Failed to save venue hierarchy:", err);
-    }
+    const venue = get().venues.find((v) => v.id === venueId);
+    console.log("venue343434", venue);
+
+    if (!venue) return;
+
+    await api.post(`/venues/${venueId}/hierarchy`, {
+      hierarchy: venue.hierarchy,
+    });
   },
 
   // EVENTS    slice begins hereee=============================================

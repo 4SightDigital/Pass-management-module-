@@ -28,7 +28,7 @@ function AppLayout() {
   const { fetchVenues, fetchEvents } = useVenueStore();
   const [isCollapsed, setIsCollapsed] = useState(false);
   // const { isAuthenticated } = useAuth();
-  
+
   const { isAuthenticated, loading } = useAuth();
   const hideLayout = !isAuthenticated;
 
@@ -70,7 +70,16 @@ function AppLayout() {
         <main className="flex-1 overflow-y-auto p-4 md:p-6">
           <div className="max-w-7xl mx-auto">
             <Routes>
-              <Route path="/" element={<Navigate to="/login" replace />} />
+              <Route
+                path="/"
+                element={
+                  isAuthenticated ? (
+                    <Navigate to="/booking" replace />
+                  ) : (
+                    <Navigate to="/login" replace />
+                  )
+                }
+              />
               <Route path="/login" element={<LoginPage />} />
 
               <Route
