@@ -13,7 +13,6 @@ import Venues from "./pages/Venues";
 import Events from "./pages/Events";
 import ManageSeating from "./pages/ManageSeating";
 import BookTickets from "./pages/BookTickets";
-import logo from "../src/assets/company-logo.webp";
 import useVenueStore from "./store/useVenueStore";
 import Navbar from "./components/Navbar";
 import BookingReports from "./pages/BookingReports";
@@ -22,6 +21,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { useAuth } from "./components/AuthContext";
 import NotFoundPage from "./components/NotFoundPage";
 import { AuthProvider } from "./components/AuthContext";
+import PublicRoute from "./components/PublicRoute";
 
 function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -80,8 +80,15 @@ function AppLayout() {
                   )
                 }
               />
-              <Route path="/login" element={<LoginPage />} />
-
+              {/* <Route path="/login" element={<LoginPage />} /> */}
+              <Route
+                path="/login"
+                element={
+                  <PublicRoute>
+                    <LoginPage />
+                  </PublicRoute>
+                }
+              />
               <Route
                 path="/booking"
                 element={

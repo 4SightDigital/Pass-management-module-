@@ -8,7 +8,7 @@ function BookTickets() {
   const venues = useVenueStore((state) => state.venues);
   const addBooking = useVenueStore((state) => state.addBooking);
   const updateEventSeats = useVenueStore((state) => state.updateEventSeats);
-
+  const venueHierarchies = useVenueStore((state) => state.venueHierarchies)
   // Form state
   const [selectedEvent, setSelectedEvent] = useState("");
   const [guestName, setGuestName] = useState("");
@@ -23,7 +23,7 @@ function BookTickets() {
   const [refContact, setRefContact] = useState("");
   const [bookingStatus, setBookingStatus] = useState("");
   const [errors, setErrors] = useState({});
-
+  console.log("venuess hiereacjhu", venueHierarchies)
   // Get selected event and venue data
   const event = events.find((e) => e.id === selectedEvent);
   const venue = event ? venues.find((v) => v.id === event.venueId) : null;
@@ -42,9 +42,9 @@ function BookTickets() {
   const availableSeats = selectedSubCategory
     ? selectedSubCategory.capacity - (selectedSubCategory.booked || 0)
     : 0;
-  const totalPrice = selectedSubCategory
-    ? seatsRequested * selectedSubCategory.price
-    : 0;
+  // const totalPrice = selectedSubCategory
+  //   ? seatsRequested * selectedSubCategory.price
+  //   : 0;
 
   // Reset form when event changes
   useEffect(() => {
@@ -123,7 +123,7 @@ function BookTickets() {
           gender: refGender,
           contact: refContact,
         },
-        totalPrice,
+        // totalPrice,
         bookingDate: new Date().toISOString(),
         status: "confirmed",
       };

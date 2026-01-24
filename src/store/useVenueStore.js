@@ -14,7 +14,6 @@ import {
 } from "../api/events.api";
 // import { frontendToBackendHierarchy } from "../utils/mapper/hierachyMapper";
 import api from "../api/axios"; // axios instance
-import { backendToFrontendHierarchy } from "../utils/mapper/hierachyMapper";
 import venueHierarchySlice from "./venueHierarchySlice";
 
 const useVenueStore = create((set, get) => ({

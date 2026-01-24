@@ -6,7 +6,6 @@ const venueHierarchySlice = (set, get) => ({
   ========================== */
   venueHierarchies: {},
   // { [venueId]: CategoryNode[] }
-
   /* ==========================
      ADD ROOT CATEGORY
   ========================== */
@@ -71,19 +70,37 @@ const venueHierarchySlice = (set, get) => ({
   ========================== */
   saveHierarchyToBackend: async (venueId) => {
     const draft = get().venueHierarchies[venueId];
-    if (!draft?.length) return;
+    if (!draft?.length) {
+      return {
+        success: false,
+        message: "No hierarchy data to save",
+      };
+    }
 
-    const res = await api.post(`/venues/${venueId}/hierarchy`, {
-      hierarchy: draft,
-    });
+    try {
+      const res = await api.post(`/venues/${venueId}/hierarchy`, {
+        hierarchy: draft,
+      });
 
-    // BACKEND IS NOW SOURCE OF TRUTH
-    set((state) => ({
-      venueHierarchies: {
-        ...state.venueHierarchies,
-        [venueId]: res.data.hierarchy,
-      },
-    }));
+      set((state) => ({
+        venueHierarchies: {
+          ...state.venueHierarchies,
+          [venueId]: res.data.hierarchy,
+          
+        },
+      }));
+      return {
+        
+        success: true,
+        data: res.data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message:
+          error.response?.data?.message || error.message || "Save failed",
+      };
+    }
   },
 
   /* ==========================
