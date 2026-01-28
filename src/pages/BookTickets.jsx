@@ -2,34 +2,48 @@ import React from "react";
 import { useState, useEffect } from "react";
 import useVenueStore from "../store/useVenueStore";
 import CategoryCard from "../components/CategoryCard";
+import { getDashboardCategories } from "../api/dashboard.api";
 
 function BookTickets() {
   const events = useVenueStore((state) => state.events);
   const venues = useVenueStore((state) => state.venues);
-  const addBooking = useVenueStore((state) => state.addBooking);
-  const updateEventSeats = useVenueStore((state) => state.updateEventSeats);
-  const venueHierarchies = useVenueStore((state) => state.venueHierarchies)
+  const createBooking = useVenueStore((state) => state.createBooking);
+  // const updateEventSeats = useVenueStore((state) => state.updateEventSeats);
+  const venueHierarchies = useVenueStore((state) => state.venueHierarchies);
+
   // Form state
   const [selectedEvent, setSelectedEvent] = useState("");
   const [guestName, setGuestName] = useState("");
   const [seatsRequested, setSeatsRequested] = useState(1);
-  const [categoryId, setCategoryId] = useState("");
-  const [subCategoryId, setSubCategoryId] = useState("");
+  const [categoryId, setCategoryId] = useState(null);
+  const [subCategoryId, setSubCategoryId] = useState(null);
   const [department, setDepartment] = useState("");
-  const [subDepartment, setSubDepartment] = useState("");
+  // const [subDepartment, setSubDepartment] = useState("");
   const [refName, setRefName] = useState("");
   const [refAge, setRefAge] = useState("");
   const [refGender, setRefGender] = useState("");
   const [refContact, setRefContact] = useState("");
   const [bookingStatus, setBookingStatus] = useState("");
   const [errors, setErrors] = useState({});
-  console.log("venuess hiereacjhu", venueHierarchies)
   // Get selected event and venue data
-  const event = events.find((e) => e.id === selectedEvent);
-  const venue = event ? venues.find((v) => v.id === event.venueId) : null;
-  const selectedCategory = venue?.hierarchy?.find((c) => c.id === categoryId);
-  const selectedSubCategory = selectedCategory?.subCategories?.find(
-    (sc) => sc.id === subCategoryId
+  // const event = events.find((e) => e.id === selectedEvent);
+  const selectedEventId = selectedEvent ? Number(selectedEvent) : null;
+
+  const event = events.find((e) => e.id === selectedEventId);
+  const venue = event ? venues.find((v) => v.id === event.venue_id) : null;
+  // const hierarchy = event ? venueHierarchies[event.venue_id] : [];
+  const venue_id = event?.venue_id ? String(event.venue_id) : null;
+  const currentVenueId = event ? String(event.venue_id) : "";
+  const hierarchy = currentVenueId
+    ? (venueHierarchies[currentVenueId] ?? [])
+    : [];
+
+  const selectedCategory = hierarchy?.find((c) => c.id === categoryId);
+  const categories = currentVenueId
+    ? venueHierarchies[currentVenueId] || []
+    : [];
+  const selectedSubCategory = selectedCategory?.children?.find(
+    (sc) => sc.id === subCategoryId,
   );
 
   const departments = {
@@ -39,30 +53,74 @@ function BookTickets() {
   };
 
   // Calculate available seats and price
-  const availableSeats = selectedSubCategory
-    ? selectedSubCategory.capacity - (selectedSubCategory.booked || 0)
-    : 0;
-  // const totalPrice = selectedSubCategory
-  //   ? seatsRequested * selectedSubCategory.price
-  //   : 0;
+  const fetchVenueHierarchy = useVenueStore((s) => s.fetchVenueHierarchy);
 
+  const [hierarchyLoading, setHierarchyLoading] = useState(false);
+
+  useEffect(() => {
+    if (!selectedEventId) return;
+
+    const currentEvent = events.find((e) => e.id === selectedEventId);
+    console.log(
+      "venueeessss idf",
+      typeof currentEvent?.venue_id,
+      currentEvent?.venue_id,
+    );
+    if (!currentEvent?.venue_id) return;
+    setCategoryId(null);
+    setSubCategoryId(null);
+
+    setHierarchyLoading(true);
+    fetchVenueHierarchy(currentEvent.venue_id).finally(() =>
+      setHierarchyLoading(false),
+    );
+  }, [selectedEventId, events]);
+
+  useEffect(() => {
+    if (!venue_id) return;
+    console.log("venueHierarchies changed", venueHierarchies);
+    console.log("Current hierarchy:", venueHierarchies[venue_id] ?? []);
+  }, [venueHierarchies, venue_id]);
+
+  const [dashboardData, setDashboardData] = useState([]);
+  const selectedDashboardSubCategory = dashboardData
+  .flatMap(cat => cat.children ?? [])
+  .find(child => child.id === subCategoryId);
+
+  const fetchCategories = async (eventId) => {
+    if (!eventId) return;
+
+    try {
+      const res = await getDashboardCategories(eventId);
+      setDashboardData(res.data);
+      console.log("dashbvoard data", res.data);
+    } catch (err) {
+      console.error("Failed to fetch categories:", err);
+      setDashboardData([]);
+    }
+  };
+  const availableSeats = selectedDashboardSubCategory
+  ? selectedDashboardSubCategory.available
+  : 0;
+  console.log("selectedDashboardSubCategory",selectedDashboardSubCategory)
   // Reset form when event changes
   useEffect(() => {
-    setCategoryId("");
-    setSubCategoryId("");
+    setCategoryId(null);
+    setSubCategoryId(null);
     setSeatsRequested(1);
+    fetchCategories(selectedEvent);
   }, [selectedEvent]);
 
   // Reset subCategory when category changes
   useEffect(() => {
-    setSubCategoryId("");
+    setSubCategoryId(null);
     setSeatsRequested(1);
   }, [categoryId]);
 
   // Reset subDepartment when department changes
-  useEffect(() => {
-    setSubDepartment("");
-  }, [department]);
+  // useEffect(() => {
+  //   setSubDepartment("");
+  // }, [department]);
 
   // Validate form
   const validateForm = () => {
@@ -77,7 +135,7 @@ function BookTickets() {
     if (seatsRequested > availableSeats)
       newErrors.seatsRequested = `Only ${availableSeats} seats available`;
     if (!department) newErrors.department = "Department is required";
-    if (!subDepartment) newErrors.subDepartment = "Sub-department is required";
+    // if (!subDepartment) newErrors.subDepartment = "Sub-department is required";
     if (!refName.trim()) newErrors.refName = "Reference name is required";
     if (!refContact.trim()) newErrors.refContact = "Contact number is required";
     if (!refGender) newErrors.refGender = "Gender is required";
@@ -86,9 +144,9 @@ function BookTickets() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
+    console.log("🔥 Book Now clicked");
     if (!validateForm()) {
       return;
     }
@@ -98,52 +156,36 @@ function BookTickets() {
       return;
     }
 
-    if (seatsRequested > availableSeats) {
-      setBookingStatus(`error: Only ${availableSeats} seats available`);
-      return;
-    }
-
     try {
-      // Create booking object
-      const booking = {
-        id: Date.now().toString(),
-        eventId: selectedEvent,
-        eventName: event?.name,
-        venueId: venue?.id,
-        venueName: venue?.name,
-        guestName,
-        seats: seatsRequested,
-        category: selectedCategory.categoryName,
-        subCategory: selectedSubCategory.subCategoryName,
-        department,
-        subDepartment,
-        reference: {
-          name: refName,
-          age: refAge,
-          gender: refGender,
+      await createBooking({
+        eventId: event.id,
+        subCategoryId: subCategoryId,
+        seatsRequested: seatsRequested,
+
+        guestDetails: {
+          name: guestName,
+          department: department,
           contact: refContact,
         },
-        // totalPrice,
-        bookingDate: new Date().toISOString(),
-        status: "confirmed",
-      };
 
-      // Update store
-      addBooking(booking);
-
-      // Update seat count
-      updateEventSeats(
-        selectedEvent,
-        categoryId,
-        subCategoryId,
-        seatsRequested
-      );
+        referenceDetails: {
+          name: refName || null,
+          age: refAge || null,
+          gender: refGender || null,
+        },
+      });
 
       // Success message
-      setBookingStatus("success: Tickets booked successfully!");
+      await fetchVenueHierarchy(event.venue_id);
 
+      setBookingStatus("success: Tickets booked successfully!");
+      handleClear();
+      alert("Pass Booked Successfully");
       // Clear success message after 3 seconds
       setTimeout(() => setBookingStatus(""), 3000);
+
+      await fetchVenueHierarchy(event.venue_id);
+      await fetchCategories(event.id); // ← THIS updates your dashboard
     } catch (error) {
       setBookingStatus(`error: ${error.message}`);
     }
@@ -156,7 +198,7 @@ function BookTickets() {
     setCategoryId("");
     setSubCategoryId("");
     setDepartment("");
-    setSubDepartment("");
+    // setSubDepartment("");
     setRefName("");
     setRefAge("");
     setRefGender("");
@@ -164,106 +206,57 @@ function BookTickets() {
     setErrors({});
     setBookingStatus("");
   };
+  const sum = (children = []) =>
+    children.reduce((acc, c) => acc + (c.capacity ?? c.seats ?? 0), 0);
 
-  const categoriesData = [
-    {
-      id: 1,
-      name: "VIP",
-      totalSeats: 6500,
-      availableSeats: 5300,
-      bookedSeats: 1200,
-      tableHeaders: {
-        subCategory: "Sub Category",
-        available: "Available",
-        booked: "Booked",
-        total: "Total",
-      },
-      subCategories: [
-        { name: "BLOCK A", available: 100, booked: 50 },
-        { name: "BLOCK drg", available: 100, booked: 50 },
-        { name: "Premium A", available: 100, booked: 50 },
-        { name: "BLOCK gfhfgh", available: 100, booked: 50 },
-        { name: "BLOCK fghfgh", available: 100, booked: 50 },
-        { name: "cat A", available: 100, booked: 50 },
-        { name: "BLOCKsdcvsd A", available: 100, booked: 50 },
-        { name: "Executive", available: 80, booked: 70 },
-        { name: "Diamond", available: 120, booked: 30 },
-      ],
-    },
-    {
-      id: 2,
-      name: "Premium",
-      totalSeats: 4000,
-      availableSeats: 3200,
-      bookedSeats: 800,
-      
-      subCategories: [
-        { name: "Section A", available: 200, booked: 100 },
-        { name: "Section B", available: 180, booked: 120 },
-        { name: "Section C", available: 150, booked: 150 },
-        { name: "Front Row", available: 80, booked: 70 },
-        { name: "Middle Row", available: 120, booked: 80 },
-        { name: "Back Row", available: 100, booked: 60 },
-      ],
-    },
-    {
-      id: 3,
-      name: "Economy",
-      totalSeats: 8000,
-      availableSeats: 5500,
-      bookedSeats: 2500,
-      
-      subCategories: [
-        { name: "North Stand", available: 500, booked: 500 },
-        { name: "South Stand", available: 400, booked: 600 },
-        { name: "East Stand", available: 350, booked: 650 },
-        { name: "West Stand", available: 300, booked: 700 },
-        { name: "General", available: 450, booked: 550 },
-      ],
-    },
-    {
-      id: 4,
-      name: "Student",
-      totalSeats: 2000,
-      availableSeats: 1400,
-      bookedSeats: 600,
-      subCategories: [
-        { name: "Block S1", available: 150, booked: 50 },
-        { name: "Block S2", available: 120, booked: 80 },
-        { name: "Block S3", available: 100, booked: 100 },
-        { name: "Block S4", available: 80, booked: 120 },
-        { name: "Block S5", available: 60, booked: 140 },
-      ],
-    },
-    {
-      id: 5,
-      name: "Corporate",
-      totalSeats: 1500,
-      availableSeats: 1000,
-      bookedSeats: 500,
-      subCategories: [
-        { name: "Executive Suite", available: 100, booked: 50 },
-        { name: "Premium Box", available: 80, booked: 70 },
-        { name: "Business Class", available: 120, booked: 30 },
-        { name: "Gold Lounge", available: 60, booked: 90 },
-        { name: "Silver Section", available: 90, booked: 60 },
-      ],
-    },
-    {
-      id: 6,
-      name: "Family",
-      totalSeats: 1000,
-      availableSeats: 700,
-      bookedSeats: 300,
-      subCategories: [
-        { name: "Family Zone A", available: 80, booked: 40 },
-        { name: "Family Zone B", available: 70, booked: 50 },
-        { name: "Kids Section", available: 90, booked: 30 },
-        { name: "Parent-Child", available: 60, booked: 60 },
-        { name: "Group Seating", available: 50, booked: 70 },
-      ],
-    },
-  ];
+  const sumAvailable = (children = []) =>
+    children.reduce((acc, c) => acc + (c.seats ?? 0), 0);
+
+  const sumBooked = (children = []) =>
+    children.reduce((acc, c) => acc + (c.bookedSeats ?? 0), 0);
+
+  useEffect(() => {
+    console.log("venueHierarchies (full):", venueHierarchies);
+    if (venue_id) {
+      console.log(
+        "venueHierarchies for venue_id",
+        venue_id,
+        ":",
+        venueHierarchies[venue_id],
+      );
+    }
+  }, [venueHierarchies, venue_id]);
+  console.log("venueHierarchies keys and types:");
+  Object.keys(venueHierarchies).forEach((key) => {
+    console.log(
+      `key: ${key} (type: ${typeof key}) => value type: ${typeof venueHierarchies[key]}`,
+    );
+  });
+
+  console.log("current venue_id:", venue_id, `(type: ${typeof venue_id})`);
+  console.log(
+    "lookup result:",
+    venue_id ? venueHierarchies[venue_id] : "venue_id is null",
+  );
+
+  // Calculate summary dynamically
+  const totalCapacity = dashboardData.reduce(
+    (acc, cat) => acc + sum(cat.children),
+    0,
+  );
+
+  const totalAvailable = dashboardData.reduce(
+  (acc, cat) => acc + cat.availableSeats,
+  0
+);
+
+  const totalBooked = dashboardData.reduce(
+    (acc, cat) => acc + (cat.bookedSeats ?? 0),
+    0,
+  );
+
+  const overallOccupancy =
+    totalCapacity > 0 ? ((totalBooked / totalCapacity) * 100).toFixed(1) : 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-6">
@@ -375,7 +368,7 @@ function BookTickets() {
                 </div>
 
                 {/* Sub-Department */}
-                {department && (
+                {/* {department && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Sub-Department of Guest *
@@ -419,7 +412,7 @@ function BookTickets() {
                       </p>
                     )}
                   </div>
-                )}
+                )} */}
 
                 {/* Event Selection */}
                 <div>
@@ -429,7 +422,7 @@ function BookTickets() {
                   <div className="relative">
                     <select
                       value={selectedEvent}
-                      onChange={(e) => setSelectedEvent(e.target.value)}
+                      onChange={(e) => setSelectedEvent(Number(e.target.value))}
                       className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400 appearance-none ${
                         errors.selectedEvent
                           ? "border-red-300"
@@ -473,19 +466,24 @@ function BookTickets() {
                   </label>
                   <div className="relative">
                     <select
-                      value={categoryId}
-                      onChange={(e) => setCategoryId(e.target.value)}
-                      disabled={!selectedEvent}
+                      value={categoryId || ""}
+                      onChange={(e) => setCategoryId(Number(e.target.value))}
+                      disabled={!selectedEvent || hierarchyLoading}
                       className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400 appearance-none ${
                         errors.categoryId ? "border-red-300" : "border-gray-300"
                       } ${
                         !selectedEvent ? "bg-gray-50 cursor-not-allowed" : ""
                       }`}
                     >
-                      <option value="">Select seat category</option>
-                      {venue?.hierarchy?.map((cat) => (
+                      <option value="">
+                        {hierarchyLoading
+                          ? "Loading categories..."
+                          : "Select seat category"}
+                      </option>
+                      {console.log("hhhhhhhhhhhhhh", hierarchy)}
+                      {hierarchy.map((cat) => (
                         <option key={cat.id} value={cat.id}>
-                          {cat.categoryName}
+                          {cat.name}
                         </option>
                       ))}
                     </select>
@@ -521,7 +519,9 @@ function BookTickets() {
                     <div className="relative">
                       <select
                         value={subCategoryId}
-                        onChange={(e) => setSubCategoryId(e.target.value)}
+                        onChange={(e) =>
+                          setSubCategoryId(Number(e.target.value))
+                        }
                         className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400 appearance-none ${
                           errors.subCategoryId
                             ? "border-red-300"
@@ -529,9 +529,9 @@ function BookTickets() {
                         }`}
                       >
                         <option value="">Sub-category of seats</option>
-                        {selectedCategory.subCategories?.map((subCat) => (
+                        {selectedCategory.children?.map((subCat) => (
                           <option key={subCat.id} value={subCat.id}>
-                            {subCat.subCategoryName} (${subCat.price})
+                            {subCat.name}
                           </option>
                         ))}
                       </select>
@@ -567,11 +567,10 @@ function BookTickets() {
                   <div className="relative">
                     <input
                       type="number"
-                      min="1"
                       max={availableSeats}
                       value={seatsRequested}
                       onChange={(e) =>
-                        setSeatsRequested(parseInt(e.target.value) || 1)
+                        setSeatsRequested(parseInt(e.target.value))
                       }
                       disabled={!subCategoryId}
                       className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400 appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${
@@ -601,12 +600,12 @@ function BookTickets() {
                   {selectedSubCategory && (
                     <div className="mt-1 text-xs text-gray-500 space-y-1">
                       <p>Available: {availableSeats} seats</p>
-                      <p>
+                      {/* <p>
                         Price per seat:{" "}
                         <span className="font-semibold">
                           ${selectedSubCategory.price}
                         </span>
-                      </p>
+                      </p> */}
                     </div>
                   )}
                   {errors.seatsRequested && (
@@ -843,21 +842,21 @@ function BookTickets() {
                   <h2 className="text-base font-semibold">Seat Availability</h2>
                 </div>
                 <p className="text-gray-600 text-xs">
-                  Real-time seat booking status by category
+                  Real-time seat booking status by Events
                 </p>
               </div>
 
               {/* Cards Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {categoriesData.map((category) => (
+                {/* {console.log("hiiiiiiiiiiiiiiiiiiii", hierarchy)} */}
+                {dashboardData.map((category) => (
                   <CategoryCard
                     key={category.id}
                     categoryName={category.name}
-                    totalSeats={category.totalSeats}
-                    availableSeats={category.availableSeats}
+                    totalSeats={sum(category.children)}
                     bookedSeats={category.bookedSeats}
-                    subCategories={category.subCategories}
-                    // tableHeaders={category.tableHeaders}
+                    availableSeats={sumAvailable(category.children)}
+                    subCategories={category.children}
                   />
                 ))}
               </div>
@@ -867,23 +866,25 @@ function BookTickets() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="text-center">
                     <div className="text-2xl font-bold text-gray-900">
-                      22,000
+                      {totalCapacity.toLocaleString()}
                     </div>
                     <div className="text-xs text-gray-600">Total Capacity</div>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-emerald-600">
-                      16,100
+                      {totalAvailable.toLocaleString()}
                     </div>
                     <div className="text-xs text-gray-600">Available Seats</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-red-600">5,900</div>
+                    <div className="text-2xl font-bold text-red-600">
+                      {totalBooked.toLocaleString()}
+                    </div>
                     <div className="text-xs text-gray-600">Booked Seats</div>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-blue-600">
-                      26.8%
+                      {overallOccupancy}%
                     </div>
                     <div className="text-xs text-gray-600">
                       Overall Occupancy

@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import axios from "axios";
 import {
   createVenue,
   deleteVenue,
@@ -27,7 +28,7 @@ const useVenueStore = create((set, get) => ({
     try {
       set({ loading: true });
       const res = await getVenues();
-      console.log("venues data from the api", res.data);
+      // console.log("venues data from the api", res.data);
       set({
         venues: res.data.map((v) => ({ ...v })),
         loading: false,
@@ -82,7 +83,7 @@ const useVenueStore = create((set, get) => ({
     try {
       set({ loading: true });
       const res = await getEvents();
-      console.log("events data", res.data);
+      // console.log("events data", res.data);
       set({
         events: res.data.map((e) => ({ ...e })),
       });
@@ -115,7 +116,7 @@ const useVenueStore = create((set, get) => ({
   // categories of venues
 
   fetchVenueHierarchy: async (venueId) => {
-    const res = await api.get(`/venues/${venueId}`);
+    const res = await getVenueHierarchy(venueId);
 
     console.log("dataaaa for hierarchy", res.data.hierarchy);
 
@@ -129,6 +130,39 @@ const useVenueStore = create((set, get) => ({
       },
     }));
   },
+
+  createBooking: async ({
+    eventId,
+    subCategoryId,
+    seatsRequested,
+    guestDetails,
+    referenceDetails,
+  }) => {
+    try {
+      const response = await api.post("/claims/book", {
+        event_id: Number(eventId),
+        category_id: Number(subCategoryId),
+        quantity: Number(seatsRequested),
+
+        guest_name: guestDetails.name,
+        department: guestDetails.department,
+        contact_number: guestDetails.contact,
+
+        reference_person: referenceDetails?.name || null,
+        age: referenceDetails?.age || null,
+        gender: referenceDetails?.gender || null,
+      });
+
+      // Optional: refresh hierarchy to update availability
+      // await get().fetchVenueHierarchyByEvent(eventId);
+
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.error || "Booking failed");
+    }
+  },
+
+  // -------------------- END CREATE BOOKING --------------------
 
   // Add subcategory to a category
   addSubCategoryToCategory: (venueId, parentId, sub) => {
@@ -166,18 +200,6 @@ const useVenueStore = create((set, get) => ({
           : v,
       ),
     }));
-  },
-
-  // Save hierarchy to backend
-  saveVenueHierarchyToBackend: async (venueId) => {
-    const venue = get().venues.find((v) => v.id === venueId);
-    console.log("venue343434", venue);
-
-    if (!venue) return;
-
-    await api.post(`/venues/${venueId}/hierarchy`, {
-      hierarchy: venue.hierarchy,
-    });
   },
 
   // EVENTS    slice begins hereee=============================================

@@ -2,143 +2,60 @@ import React, { useState, useEffect } from "react";
 import { Doughnut } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import SearchBar from "../components/search/SearchBar";
+import api from "../api/axios";
+import useVenueStore from "../store/useVenueStore";
 
 // Register ChartJS components
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-// Mock data - replace with API data
-const mockEvents = [
-  {
-    id: 1,
-    name: "Tech Conference 2024",
-    date: "2024-03-15",
-    venue: "Convention Center",
-  },
-  { id: 2, name: "Music Festival", date: "2024-04-20", venue: "City Stadium" },
-  { id: 3, name: "Business Summit", date: "2024-05-10", venue: "Grand Hotel" },
-];
 
-const mockBookingData = {
-  totalReferencePersons: 10,
-  totalVIPPasses: 25,
-  totalSeatsIssued: 180,
-  referencePersons: [
-    {
-      id: 1,
-      name: "John Smith",
-      vipPasses: 5,
-      totalSeats: 40,
-      seatCategories: 3,
-    },
-    {
-      id: 2,
-      name: "Sarah Johnson",
-      vipPasses: 4,
-      totalSeats: 35,
-      seatCategories: 2,
-    },
-    {
-      id: 3,
-      name: "Michael Chen",
-      vipPasses: 3,
-      totalSeats: 30,
-      seatCategories: 2,
-    },
-    {
-      id: 4,
-      name: "Emma Wilson",
-      vipPasses: 3,
-      totalSeats: 25,
-      seatCategories: 2,
-    },
-    {
-      id: 5,
-      name: "David Brown",
-      vipPasses: 3,
-      totalSeats: 20,
-      seatCategories: 1,
-    },
-    {
-      id: 6,
-      name: "Lisa Taylor",
-      vipPasses: 2,
-      totalSeats: 15,
-      seatCategories: 1,
-    },
-    {
-      id: 7,
-      name: "Robert Miller",
-      vipPasses: 2,
-      totalSeats: 10,
-      seatCategories: 1,
-    },
-    {
-      id: 8,
-      name: "Jennifer Lee",
-      vipPasses: 3,
-      totalSeats: 5,
-      seatCategories: 1,
-    },
-    {
-      id: 9,
-      name: "Dae Dvcds",
-      vipPasses: 3,
-      totalSeats: 5,
-      seatCategories: 1,
-    },
-    {
-      id: 10,
-      name: "liong Lee",
-      vipPasses: 3,
-      totalSeats: 5,
-      seatCategories: 1,
-    },
-    {
-      id: 11,
-      name: "Fjkl",
-      vipPasses: 3,
-      totalSeats: 5,
-      seatCategories: 1,
-    },
-    {
-      id: 12,
-      name: "Ardg",
-      vipPasses: 3,
-      totalSeats: 5,
-      seatCategories: 1,
-    },
-    {
-      id: 13,
-      name: "Lee",
-      vipPasses: 3,
-      totalSeats: 5,
-      seatCategories: 1,
-    },
-  ],
+const emptyBookingData = {
+  totalReferencePersons: 0,
+  totalVIPPasses: 0,
+  totalSeatsIssued: 0,
+  referencePersons: [],
 };
 
 const BookingReports = () => {
+  const { events, fetchEvents } = useVenueStore();
   const [selectedEvent, setSelectedEvent] = useState("");
-  const [bookingData, setBookingData] = useState(mockBookingData);
+  const [bookingData, setBookingData] = useState(emptyBookingData);
+  const [filtRefDetails, setFiltRefDetails] = useState([]);
+  const [error, setError] = useState(null);
+
   const [isLoading, setIsLoading] = useState(false);
-  const [filtRefDetails, setFiltRefDetails] = useState(
-    bookingData.referencePersons,
-  );
-  // console.log("filtRefDetailsfiltRefDetails", filtRefDetails);
-  // Handle event selection
-  const handleEventChange = (e) => {
+
+  useEffect(() => {
+  fetchEvents();
+}, [fetchEvents]);
+
+  const handleEventChange = async (e) => {
     const eventId = e.target.value;
     setSelectedEvent(eventId);
 
-    if (eventId) {
-      setIsLoading(true);
-      // Simulate API call
-      setTimeout(() => {
-        // In real app, fetch data based on eventId
-        setBookingData(mockBookingData);
-        // setFiltRefDetails(mockBookingData.referencePersons)
-        setIsLoading(false);
-      }, 500);
+    if (!eventId) return;
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const res = await api(`/reports/person-wise/${eventId}`);
+      console.log("resssss",res.data.data)
+      const json = await res.data;
+
+      if (!json.success) {
+        throw new Error("Failed to load booking report");
+      }
+
+      setBookingData(json.data);
+      setFiltRefDetails(json.data.referencePersons);
+    } catch (err) {
+      console.error(err);
+      setError("Unable to load booking report");
+      setBookingData(emptyBookingData);
+      setFiltRefDetails([]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -201,10 +118,10 @@ const BookingReports = () => {
           label: (context) => {
             const label = context.label || "";
             const value = context.raw || 0;
-            const percentage = (
-              (value / bookingData.totalSeatsIssued) *
-              100
-            ).toFixed(1);
+            const percentage =
+              bookingData.totalSeatsIssued > 0
+                ? ((value / bookingData.totalSeatsIssued) * 100).toFixed(1)
+                : 0;
             return `${label}: ${value} seats (${percentage}%)`;
           },
         },
@@ -272,7 +189,7 @@ const BookingReports = () => {
                     className="w-full px-4 py-3 pl-11 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 appearance-none"
                   >
                     <option value="">Choose an event...</option>
-                    {mockEvents.map((event) => (
+                    {events.map((event) => (
                       <option key={event.id} value={event.id}>
                         {event.name}
                       </option>
@@ -742,8 +659,16 @@ const BookingReports = () => {
                     reference persons
                   </div>
                   <div className="flex items-center gap-4">
-                    <button className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
-                      Export CSV
+                    <button
+                      onClick={() =>
+                        window.open(
+                          `/reports/person-wise/${selectedEvent}/download`,
+                          "_blank",
+                        )
+                      }
+                      className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium"
+                    >
+                      Export Excel
                     </button>
                     <button className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition-colors">
                       Print Report

@@ -6,7 +6,6 @@ export const loginUser = (data) =>
   });
 export const logoutUser = () => axios.post("/logout");
 export const getCurrentUser = () => {
-  console.log("Getting current user...");
   return axios.get("/me", {
     withCredentials: true,
   });

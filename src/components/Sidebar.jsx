@@ -145,24 +145,24 @@ function Sidebar({ isOpen, onClose, isCollapsed, onCollapse }) {
               icon={<Users className="w-5 h-5" />}
               isCollapsed={isCollapsed}
             />
-            <SidebarLink
+            {/* <SidebarLink
               to="/locations"
               label="Locations"
               icon={<MapPin className="w-5 h-5" />}
               isCollapsed={isCollapsed}
-            />
+            /> */}
 
             {/* Divider */}
             <div
               className={`h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent my-4 ${isCollapsed ? "mx-1" : ""}`}
             />
 
-            <SidebarLink
+            {/* <SidebarLink
               to="/settings"
               label="Settings"
               icon={<Settings className="w-5 h-5" />}
               isCollapsed={isCollapsed}
-            />
+            /> */}
           </nav>
 
           {/* Footer/User Section */}

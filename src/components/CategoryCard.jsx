@@ -9,6 +9,13 @@ const CategoryCard = ({
   subCategoryLabel = "Sub Category"
 }) => {
   const bookedPercentage = totalSeats > 0 ? (bookedSeats / totalSeats) * 100 : 0;
+  console.log("bookedSeatsbookedSeats",bookedSeats)
+
+const totalAvailableFromSub = subCategories.reduce(
+  (sum, sub) => sum + (sub.available || 0),
+  0
+);
+
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg shadow-sm h-64 flex flex-col overflow-hidden">
@@ -25,7 +32,7 @@ const CategoryCard = ({
             </span>
           </div>
           <span className="text-xs font-medium text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full">
-            {availableSeats.toLocaleString()} available
+            {totalAvailableFromSub.toLocaleString()} available
           </span>
         </div>
         
