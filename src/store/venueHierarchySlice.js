@@ -70,12 +70,12 @@ const venueHierarchySlice = (set, get) => ({
   ========================== */
   saveHierarchyToBackend: async (venueId) => {
     const draft = get().venueHierarchies[venueId];
-    if (!draft?.length) {
-      return {
-        success: false,
-        message: "No hierarchy data to save",
-      };
-    }
+    // if (!draft?.length) {
+    //   return {
+    //     success: false,
+    //     message: "No hierarchy data to save",
+    //   };
+    // }
 
     try {
       const res = await api.post(`/venues/${venueId}/hierarchy`, {
@@ -86,11 +86,9 @@ const venueHierarchySlice = (set, get) => ({
         venueHierarchies: {
           ...state.venueHierarchies,
           [venueId]: res.data.hierarchy,
-          
         },
       }));
       return {
-        
         success: true,
         data: res.data,
       };
@@ -113,6 +111,31 @@ const venueHierarchySlice = (set, get) => ({
         [venueId]: [],
       },
     }));
+  },
+  // Delete a root category (mark as deleted)
+  // Delete a root category completely
+  deleteRootCategory: (venueId, catIndex) => {
+    set((state) => {
+      const hierarchy = state.venueHierarchies[venueId] || [];
+      hierarchy.splice(catIndex, 1); // remove the category
+      return {
+        venueHierarchies: { ...state.venueHierarchies, [venueId]: hierarchy },
+      };
+    });
+  },
+
+  // Delete a subcategory completely
+  deleteSubCategory: (venueId, catIndex, subIndex) => {
+    set((state) => {
+      const hierarchy = state.venueHierarchies[venueId] || [];
+      const category = hierarchy[catIndex];
+      if (category && category.children) {
+        category.children.splice(subIndex, 1); // remove the subcategory
+      }
+      return {
+        venueHierarchies: { ...state.venueHierarchies, [venueId]: hierarchy },
+      };
+    });
   },
 });
 
