@@ -12,7 +12,8 @@ const ManageSeating = () => {
     addChildCategory,
     saveHierarchyToBackend,
     deleteRootCategory,
-    deleteSubCategory
+    deleteSubCategory,
+    editSubCategory,
   } = useVenueStore();
 
   const [openVenueId, setOpenVenueId] = useState(null);
@@ -20,6 +21,8 @@ const ManageSeating = () => {
   const [validationErrors, setValidationErrors] = useState({});
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState({});
+  const [editingSub, setEditingSub] = useState(null);
+  // { venueId, catIndex, subIndex, name, seats }
 
   const toggleCategory = (venueId, index) => {
     const key = `${venueId}-${index}`;
@@ -283,9 +286,17 @@ const ManageSeating = () => {
                         </span>
                       </div>
                       <div className="text-left">
-                        <h2 className="font-bold text-gray-900 text-lg">
-                          {venue.name}
-                        </h2>
+                        <div className="flex justify-between">
+                          <h2 className="font-bold text-gray-900 text-lg">
+                            {venue.name}
+                          </h2>
+                          <div className="text-gray-600">
+                            Total Capacity:{" "}
+                            <span className="font-bold text-gray-900 text-lg">
+                              {venue.total_capacity}
+                            </span>
+                          </div>
+                        </div>
                         <div className="flex items-center gap-3 mt-1">
                           <span className="text-sm text-gray-600">
                             {hierarchy.length} categor
@@ -708,44 +719,95 @@ const ManageSeating = () => {
 
                                 {/* Subcategories List */}
                                 {expanded && cat.children.length > 0 && (
-                                  <div className="mt-6 pt-6 border-t border-gray-100">
+                                  <div className="mt-6 pt-6 border-t border-gray-200">
                                     <div className="flex items-center justify-between mb-4">
-                                      <h5 className="font-medium text-gray-900">
-                                        Subcategories
-                                      </h5>
-                                      <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs font-medium rounded-full">
-                                        {cat.children.length} items
-                                      </span>
+                                      <div className="flex items-center gap-2">
+                                        <h5 className="font-semibold text-gray-900">
+                                          Subcategories
+                                        </h5>
+                                        <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
+                                          {cat.children.length} item
+                                          {cat.children.length !== 1 ? "s" : ""}
+                                        </span>
+                                      </div>
                                     </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                                       {cat.children.map((sub, subIndex) => {
+                                        const errorId = `${venue.id}-${catIndex}-${subIndex}`;
                                         const seatError =
-                                          validationErrors[
-                                            `${venue.id}-${catIndex}-${subIndex}-seats`
-                                          ];
+                                          validationErrors[`${errorId}-seats`];
                                         const nameError =
-                                          validationErrors[
-                                            `${venue.id}-${catIndex}-${subIndex}-name`
-                                          ];
+                                          validationErrors[`${errorId}-name`];
                                         const hasError = seatError || nameError;
+                                        const isEditing =
+                                          editingSub?.venueId === venue.id &&
+                                          editingSub?.catIndex === catIndex &&
+                                          editingSub?.subIndex === subIndex;
 
                                         return (
                                           <div
                                             key={subIndex}
-                                            data-error={`${venue.id}-${catIndex}-${subIndex}`}
-                                            className={`p-4 rounded-lg border ${hasError ? "border-red-300 bg-red-50/50" : "border-gray-200 bg-gray-50"} hover:border-gray-300 transition-colors duration-150`}
+                                            className={`group relative p-4 rounded-xl border transition-all duration-200 ${
+                                              isEditing
+                                                ? "border-blue-300 bg-blue-50 ring-2 ring-blue-100"
+                                                : hasError
+                                                  ? "border-red-300 bg-red-50/80"
+                                                  : "border-gray-200 bg-white hover:border-gray-300 hover:shadow-md"
+                                            }`}
                                           >
-                                            <div className="flex items-start gap-3 mb-2">
-                                              <div className="w-8 h-8 rounded-md bg-gray-200 flex items-center justify-center flex-shrink-0">
-                                                <span className="text-gray-700 font-bold text-sm">
-                                                  C{catIndex + 1}.{subIndex + 1}
-                                                </span>
+                                            {/* Edit Mode Overlay */}
+                                            {isEditing && (
+                                              <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 to-blue-100/10 rounded-xl pointer-events-none"></div>
+                                            )}
+
+                                            {/* Header Section */}
+                                            <div className="flex items-center justify-between mb-3 relative z-10">
+                                              <div className="flex items-center gap-2.5">
+                                                {/* ID Badge */}
+                                                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 flex items-center justify-center shadow-sm">
+                                                  <span className="text-gray-800 font-bold text-xs">
+                                                    {catIndex + 1}.
+                                                    {subIndex + 1}
+                                                  </span>
+                                                </div>
+
+                                                {/* Name Field */}
+                                                <div className="min-w-0">
+                                                  {isEditing ? (
+                                                    <input
+                                                      value={editingSub.name}
+                                                      onChange={(e) =>
+                                                        setEditingSub({
+                                                          ...editingSub,
+                                                          name: e.target.value,
+                                                        })
+                                                      }
+                                                      className="px-3 py-1.5 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-sm w-full max-w-[140px] bg-white"
+                                                      placeholder="Subcategory name"
+                                                      autoFocus
+                                                    />
+                                                  ) : (
+                                                    <div className="flex items-center gap-1.5">
+                                                      <span className="text-sm font-medium text-gray-900 truncate max-w-[120px]">
+                                                        {sub.name}
+                                                      </span>
+                                                      {nameError && (
+                                                        <span className="px-1.5 py-0.5 bg-red-100 text-red-700 text-xs font-medium rounded-full">
+                                                          Duplicate
+                                                        </span>
+                                                      )}
+                                                    </div>
+                                                  )}
+                                                </div>
                                               </div>
+
+                                              {/* Delete Button */}
                                               <button
                                                 onClick={() => {
                                                   if (
                                                     window.confirm(
-                                                      `Delete subcategory "${sub.name}"?`,
+                                                      `Delete "${sub.name}"?`,
                                                     )
                                                   ) {
                                                     deleteSubCategory(
@@ -755,51 +817,183 @@ const ManageSeating = () => {
                                                     );
                                                   }
                                                 }}
-                                                className="ml-2 text-red-500 hover:text-red-700 text-xs font-medium"
+                                                className={`p-1.5 rounded-lg transition-all ${
+                                                  isEditing
+                                                    ? "text-red-400 hover:text-red-600 hover:bg-red-100"
+                                                    : "text-gray-400 hover:text-red-500 hover:bg-red-50"
+                                                }`}
+                                                title="Delete subcategory"
                                               >
-                                                ✗
+                                                <svg
+                                                  className="w-4 h-4"
+                                                  fill="none"
+                                                  stroke="currentColor"
+                                                  viewBox="0 0 24 24"
+                                                >
+                                                  <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                                  />
+                                                </svg>
                                               </button>
+                                            </div>
 
-                                              <div className="flex-1">
-                                                <div className="flex justify-between items-start">
-                                                  <div className="flex items-center gap-2">
-                                                    <span className="font-medium text-gray-900 truncate">
-                                                      {sub.name}
-                                                    </span>
-                                                    {nameError && (
-                                                      <span className="text-xs text-red-600 font-medium bg-red-100 px-2 py-0.5 rounded-full">
-                                                        Duplicate
-                                                      </span>
-                                                    )}
+                                            {/* Seats Section */}
+                                            <div className="flex items-center justify-between mb-3 relative z-10 pl-4">
+                                              <div className="flex items-center gap-3">
+                                                {/* Seats Icon */}
+
+                                                {/* Seats Input/Display */}
+                                                <div>
+                                                  <div className="text-xs text-gray-500 mb-1">
+                                                    Total Seats
                                                   </div>
-                                                  <span className="text-sm font-semibold text-gray-700">
-                                                    {sub.seats} seats
+                                                  {isEditing ? (
+                                                    <input
+                                                      type="number"
+                                                      min="1"
+                                                      value={editingSub.seats}
+                                                      onChange={(e) =>
+                                                        setEditingSub({
+                                                          ...editingSub,
+                                                          seats: Math.max(
+                                                            1,
+                                                            Number(
+                                                              e.target.value,
+                                                            ) || 0,
+                                                          ),
+                                                        })
+                                                      }
+                                                      className="px-3 py-1.5 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-sm w-20 bg-white"
+                                                    />
+                                                  ) : (
+                                                    <div className="text-xl font-bold text-gray-900">
+                                                      {sub.seats}
+                                                    </div>
+                                                  )}
+                                                </div>
+                                              </div>
+
+                                              {/* Action Buttons */}
+                                              <div className="flex gap-1">
+                                                {isEditing ? (
+                                                  <>
+                                                    <button
+                                                      onClick={() => {
+                                                        editSubCategory(
+                                                          venue.id,
+                                                          catIndex,
+                                                          subIndex,
+                                                          {
+                                                            name: editingSub.name,
+                                                            seats:
+                                                              editingSub.seats,
+                                                          },
+                                                        );
+                                                        setEditingSub(null);
+                                                      }}
+                                                      className="px-3 py-1.5 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white text-xs font-medium rounded-lg shadow-sm hover:shadow transition-all"
+                                                    >
+                                                      Save
+                                                    </button>
+                                                    <button
+                                                      onClick={() =>
+                                                        setEditingSub(null)
+                                                      }
+                                                      className="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-800 text-xs font-medium rounded-lg transition-colors"
+                                                    >
+                                                      Cancel
+                                                    </button>
+                                                  </>
+                                                ) : (
+                                                  <button
+                                                    onClick={() =>
+                                                      setEditingSub({
+                                                        venueId: venue.id,
+                                                        catIndex,
+                                                        subIndex,
+                                                        name: sub.name,
+                                                        seats: sub.seats,
+                                                      })
+                                                    }
+                                                    className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors group-hover:opacity-100 opacity-70"
+                                                    title="Edit"
+                                                  >
+                                                    <svg
+                                                      className="w-4 h-4"
+                                                      fill="none"
+                                                      stroke="currentColor"
+                                                      viewBox="0 0 24 24"
+                                                    >
+                                                      <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={2}
+                                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                                      />
+                                                    </svg>
+                                                  </button>
+                                                )}
+                                              </div>
+                                            </div>
+
+                                            {/* Error Message */}
+                                            {hasError && !isEditing && (
+                                              <div className="mt-3 pt-3 border-t border-gray-100 relative z-10">
+                                                <div className="flex items-start gap-2 text-xs">
+                                                  <svg
+                                                    className="w-3.5 h-3.5 text-red-500 flex-shrink-0 mt-0.5"
+                                                    fill="currentColor"
+                                                    viewBox="0 0 20 20"
+                                                  >
+                                                    <path
+                                                      fillRule="evenodd"
+                                                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                                      clipRule="evenodd"
+                                                    />
+                                                  </svg>
+                                                  <span className="text-red-600 font-medium leading-tight">
+                                                    {seatError?.message ||
+                                                      nameError?.message}
                                                   </span>
                                                 </div>
                                               </div>
-                                            </div>
-                                            {hasError && (
-                                              <div className="mt-2 text-xs text-red-600 font-medium flex items-center gap-1">
-                                                <svg
-                                                  className="w-3 h-3"
-                                                  fill="currentColor"
-                                                  viewBox="0 0 20 20"
-                                                >
-                                                  <path
-                                                    fillRule="evenodd"
-                                                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-                                                    clipRule="evenodd"
-                                                  />
-                                                </svg>
-                                                {seatError
-                                                  ? seatError.message
-                                                  : nameError.message}
-                                              </div>
                                             )}
+
+                                            {/* Edit Mode Tips */}
                                           </div>
                                         );
                                       })}
                                     </div>
+
+                                    {/* Empty State for Subcategories */}
+                                    {cat.children.length === 0 && (
+                                      <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-xl">
+                                        <div className="w-12 h-12 mx-auto mb-3 bg-gray-100 rounded-full flex items-center justify-center">
+                                          <svg
+                                            className="w-6 h-6 text-gray-400"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                          >
+                                            <path
+                                              strokeLinecap="round"
+                                              strokeLinejoin="round"
+                                              strokeWidth={2}
+                                              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                                            />
+                                          </svg>
+                                        </div>
+                                        <p className="text-gray-500 font-medium mb-2">
+                                          No subcategories yet
+                                        </p>
+                                        <p className="text-gray-400 text-sm mb-4">
+                                          Add subcategories to organize seats
+                                        </p>
+                                      </div>
+                                    )}
                                   </div>
                                 )}
                               </div>

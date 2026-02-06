@@ -50,28 +50,22 @@ const Events = () => {
     }
 
     const selectedVenue = venues[venueIndex];
-    const backendFormatStarttime = toIso(startTime);
-    const backendFormatEndtime = toIso(endTime);
+    const backendFormatStarttime = startTime;
+    const backendFormatEndtime = endTime;
 
     try {
       await addEvent({
-      name: eventName,
-      venue_id: selectedVenue.id,
-      start_datetime: backendFormatStarttime,
-      end_datetime: backendFormatEndtime,
-    });
+        name: eventName,
+        venue_id: selectedVenue.id,
+        start_datetime: backendFormatStarttime,
+        end_datetime: backendFormatEndtime,
+      });
 
-    resetEventData();
-      alert("Event added successfully");
-
+      resetEventData();
+      
     } catch (error) {
-
-      console.log("error in adding event", error)
-      alert("Failed to add Event");
-
+      console.log("error in adding event", error);
     }
-
-    
   };
 
   const navigate = useNavigate();
@@ -236,7 +230,7 @@ const Events = () => {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* LEFT COLUMN — ADD EVENT FORM */}
-          
+
           <div className="lg:col-span-1">
             <div className="bg-white rounded-2xl shadow-xl p-6 sticky top-6">
               {/* Card Header */}
@@ -375,7 +369,7 @@ const Events = () => {
                       </div>
                     </div>
                   </div>
-                      
+
                   {/* End Date */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">

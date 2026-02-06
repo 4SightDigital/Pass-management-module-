@@ -9,17 +9,16 @@ export const convertFileToBase64 = (file) => {
     };
 
     reader.onerror = (error) => {
-      reject(error)
-    }
+      reject(error);
+    };
 
-    reader.readAsDataURL(file)
+    reader.readAsDataURL(file);
   });
 };
 
 export const toIso = (localDateTime) => {
-    return new Date(localDateTime).toISOString();
-}
-
+  return new Date(localDateTime).toISOString();
+};
 
 export const formatDateTimeSimple = (datetimeString) => {
   if (!datetimeString) return "";
@@ -36,10 +35,8 @@ export const formatDateTimeSimple = (datetimeString) => {
   return `${day}-${month}-${year} ${hours}:${minutes}`;
 };
 
-
-
 export const fromIso = (isoString) => {
-  if (!isoString) return '';
+  if (!isoString) return "";
   const date = new Date(isoString);
   const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
   return localDate.toISOString().slice(0, 16);
@@ -47,22 +44,43 @@ export const fromIso = (isoString) => {
 
 // Helper functions to format date/time for display
 export const formatDateForDisplay = (dateTimeString) => {
-  if (!dateTimeString) return '';
+  if (!dateTimeString) return "";
   const date = new Date(dateTimeString);
-  return date.toLocaleDateString('en-US', {
-    weekday: 'short',
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
+  return date.toLocaleDateString("en-US", {
+    weekday: "short",
+    year: "numeric",
+    month: "short",
+    day: "numeric",
   });
 };
 
 export const formatTimeForDisplay = (dateTimeString) => {
-  if (!dateTimeString) return '';
+  if (!dateTimeString) return "";
   const date = new Date(dateTimeString);
-  return date.toLocaleTimeString('en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true
+  return date.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+};
+
+export const hasVenueTimeOverlap = ({
+  events,
+  venueId,
+  start,
+  end,
+  ignoreEventId = null, // useful while editing
+}) => {
+  const newStart = new Date(start);
+  const newEnd = new Date(end);
+
+  return events.some((event) => {
+    if (ignoreEventId && event.id === ignoreEventId) return false;
+    if (event.venue_id !== venueId) return false;
+
+    const existingStart = new Date(event.start_datetime);
+    const existingEnd = new Date(event.end_datetime);
+
+    return newStart < existingEnd && newEnd > existingStart;
   });
 };

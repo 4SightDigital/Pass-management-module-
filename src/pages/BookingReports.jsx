@@ -8,7 +8,6 @@ import useVenueStore from "../store/useVenueStore";
 // Register ChartJS components
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-
 const emptyBookingData = {
   totalReferencePersons: 0,
   totalVIPPasses: 0,
@@ -26,8 +25,8 @@ const BookingReports = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-  fetchEvents();
-}, [fetchEvents]);
+    fetchEvents();
+  }, [fetchEvents]);
 
   const handleEventChange = async (e) => {
     const eventId = e.target.value;
@@ -40,7 +39,7 @@ const BookingReports = () => {
 
     try {
       const res = await api(`/reports/person-wise/${eventId}`);
-      console.log("resssss",res.data.data)
+      console.log("resssss", res.data.data);
       const json = await res.data;
 
       if (!json.success) {
@@ -154,6 +153,47 @@ const BookingReports = () => {
       },
     },
   };
+  const downloadExcel = async (type) => {
+    if (!selectedEvent) return;
+
+    try {
+      const response = await api.get(
+        `/reports/${type}/download/${selectedEvent}`,
+        {
+          responseType: "blob", // 🔑 IMPORTANT
+        },
+      );
+
+      const blob = new Blob([response.data], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+
+      const url = window.URL.createObjectURL(blob);
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download =
+        type === "person-wise"
+          ? `person_wise_report_${selectedEvent}.xlsx`
+          : `category_wise_report_${selectedEvent}.xlsx`;
+
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to download report");
+    }
+  };
+
+  const printReport = () => {
+  window.open(
+    `/reports/person-wise/print/${selectedEvent}`,
+    "_blank"
+  );
+};
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-6">
@@ -660,17 +700,14 @@ const BookingReports = () => {
                   </div>
                   <div className="flex items-center gap-4">
                     <button
-                      onClick={() =>
-                        window.open(
-                          `/reports/person-wise/${selectedEvent}/download`,
-                          "_blank",
-                        )
-                      }
+                      onClick={() => downloadExcel("person-wise")}
                       className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium"
                     >
                       Export Excel
                     </button>
-                    <button className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition-colors">
+                    <button 
+                    onClick={printReport}
+                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition-colors">
                       Print Report
                     </button>
                   </div>

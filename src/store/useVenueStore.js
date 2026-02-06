@@ -75,7 +75,9 @@ const useVenueStore = create((set, get) => ({
       set((state) => ({
         events: [...state.events, { ...res.data }],
       }));
+      alert("Event added Succesfully")
     } catch (error) {
+      alert("Failed to Add Event")
       console.log("error in adding event", error);
     }
   },

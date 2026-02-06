@@ -65,6 +65,25 @@ const venueHierarchySlice = (set, get) => ({
     }));
   },
 
+  editSubCategory: (venueId, catIndex, subIndex, updatedData) =>
+    set((state) => {
+      const venueHierarchy = [...(state.venueHierarchies[venueId] || [])];
+
+      venueHierarchy[catIndex] = {
+        ...venueHierarchy[catIndex],
+        children: venueHierarchy[catIndex].children.map((sub, i) =>
+          i === subIndex ? { ...sub, ...updatedData } : sub,
+        ),
+      };
+
+      return {
+        venueHierarchies: {
+          ...state.venueHierarchies,
+          [venueId]: venueHierarchy,
+        },
+      };
+    }),
+
   /* ==========================
      SAVE TO BACKEND
   ========================== */

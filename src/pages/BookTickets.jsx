@@ -26,12 +26,10 @@ function BookTickets() {
   const [bookingStatus, setBookingStatus] = useState("");
   const [errors, setErrors] = useState({});
   // Get selected event and venue data
-  // const event = events.find((e) => e.id === selectedEvent);
   const selectedEventId = selectedEvent ? Number(selectedEvent) : null;
 
   const event = events.find((e) => e.id === selectedEventId);
-  const venue = event ? venues.find((v) => v.id === event.venue_id) : null;
-  // const hierarchy = event ? venueHierarchies[event.venue_id] : [];
+  // const venue = event ? venues.find((v) => v.id === event.venue_id) : null;
   const venue_id = event?.venue_id ? String(event.venue_id) : null;
   const currentVenueId = event ? String(event.venue_id) : "";
   const hierarchy = currentVenueId
@@ -46,11 +44,6 @@ function BookTickets() {
     (sc) => sc.id === subCategoryId,
   );
 
-  const departments = {
-    Security: ["Internal", "External"],
-    Protocol: ["State", "Central"],
-    Management: ["Board", "Executive"],
-  };
 
   // Calculate available seats and price
   const fetchVenueHierarchy = useVenueStore((s) => s.fetchVenueHierarchy);
@@ -84,8 +77,8 @@ function BookTickets() {
 
   const [dashboardData, setDashboardData] = useState([]);
   const selectedDashboardSubCategory = dashboardData
-  .flatMap(cat => cat.children ?? [])
-  .find(child => child.id === subCategoryId);
+    .flatMap((cat) => cat.children ?? [])
+    .find((child) => child.id === subCategoryId);
 
   const fetchCategories = async (eventId) => {
     if (!eventId) return;
@@ -100,9 +93,9 @@ function BookTickets() {
     }
   };
   const availableSeats = selectedDashboardSubCategory
-  ? selectedDashboardSubCategory.available
-  : 0;
-  console.log("selectedDashboardSubCategory",selectedDashboardSubCategory)
+    ? selectedDashboardSubCategory.available
+    : 0;
+  console.log("selectedDashboardSubCategory", selectedDashboardSubCategory);
   // Reset form when event changes
   useEffect(() => {
     setCategoryId(null);
@@ -117,10 +110,6 @@ function BookTickets() {
     setSeatsRequested(1);
   }, [categoryId]);
 
-  // Reset subDepartment when department changes
-  // useEffect(() => {
-  //   setSubDepartment("");
-  // }, [department]);
 
   // Validate form
   const validateForm = () => {
@@ -143,7 +132,8 @@ function BookTickets() {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
+  console.log("eventssss111",event);
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("🔥 Book Now clicked");
@@ -246,9 +236,9 @@ function BookTickets() {
   );
 
   const totalAvailable = dashboardData.reduce(
-  (acc, cat) => acc + cat.availableSeats,
-  0
-);
+    (acc, cat) => acc + cat.availableSeats,
+    0,
+  );
 
   const totalBooked = dashboardData.reduce(
     (acc, cat) => acc + (cat.bookedSeats ?? 0),
@@ -330,20 +320,15 @@ function BookTickets() {
                     Department of Guest*
                   </label>
                   <div className="relative">
-                    <select
+                    <input
+                      type="text"
                       value={department}
                       onChange={(e) => setDepartment(e.target.value)}
-                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400 appearance-none ${
+                      placeholder="Enter department"
+                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400 ${
                         errors.department ? "border-red-300" : "border-gray-300"
                       }`}
-                    >
-                      <option value="">Select department</option>
-                      {Object.keys(departments).map((dept) => (
-                        <option key={dept} value={dept}>
-                          {dept}
-                        </option>
-                      ))}
-                    </select>
+                    />
                     <div className="absolute right-4 top-3 pointer-events-none">
                       <svg
                         className="w-5 h-5 text-gray-400"
@@ -738,6 +723,8 @@ function BookTickets() {
                   <div className="relative">
                     <input
                       type="tel"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       value={refContact}
                       onChange={(e) => setRefContact(e.target.value)}
                       placeholder="Enter contact number"
@@ -842,7 +829,7 @@ function BookTickets() {
                   <h2 className="text-base font-semibold">Seat Availability</h2>
                 </div>
                 <p className="text-gray-600 text-xs">
-                  Real-time seat booking status by Events
+                  Real-time seat booking status of <span className="font-bold">{event ? event.name : ""}</span> Event 
                 </p>
               </div>
 
