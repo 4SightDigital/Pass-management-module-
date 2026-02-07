@@ -602,8 +602,9 @@ function BookTickets() {
 
                 {/* Reference Name */}
                 <div>
+                  <span>Reference Person Details</span>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Reference Person Name *
+                    Name *
                   </label>
                   <div className="relative">
                     <input
