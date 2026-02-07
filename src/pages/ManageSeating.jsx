@@ -22,6 +22,8 @@ const ManageSeating = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState({});
   const [editingSub, setEditingSub] = useState(null);
+  const [loadingHierarchies, setLoadingHierarchies] = useState({});
+
   // { venueId, catIndex, subIndex, name, seats }
 
   const toggleCategory = (venueId, index) => {
@@ -39,6 +41,14 @@ const ManageSeating = () => {
   const getRemainingSeats = (cat) => {
     const usedSeats = getCategoryUsedSeats(cat.children);
     return cat.seats - usedSeats;
+  };
+
+  const getVenueRemainingSeats = (venueId) => {
+    const hierarchy = venueHierarchies[venueId] || [];
+    const venue = venues.find((v) => v.id === venueId);
+    if (!venue) return 0;
+    const usedSeats = hierarchy.reduce((sum, cat) => sum + cat.seats, 0);
+    return venue.total_capacity - usedSeats;
   };
 
   // Check if category name is unique within venue
@@ -71,11 +81,17 @@ const ManageSeating = () => {
   };
 
   // Validate all categories for a venue
+  // ------------------------------
+  // VALIDATE HIERARCHY
+  // ------------------------------
   const validateVenueHierarchy = (venueId) => {
     const hierarchy = venueHierarchies[venueId] || [];
+    const venue = venues.find((v) => v.id === venueId);
     const errors = {};
 
-    // Check for duplicate category names
+    if (!venue) return errors;
+
+    // Check for duplicate category names and subcategory rules
     hierarchy.forEach((cat, catIndex) => {
       const usedSeats = getCategoryUsedSeats(cat.children);
 
@@ -87,31 +103,23 @@ const ManageSeating = () => {
         };
       }
 
-      // Check for duplicate category names
-      const isUnique = isCategoryNameUnique(venueId, cat.name, catIndex);
-      if (!isUnique) {
+      // Duplicate category names
+      if (!isCategoryNameUnique(venueId, cat.name, catIndex)) {
         errors[`${venueId}-${catIndex}-name`] = {
           message: `Category name "${cat.name}" is already used in this venue`,
           duplicate: true,
         };
       }
 
-      // Check for duplicate subcategory names
+      // Duplicate subcategory names and subcategory seat overflow
       cat.children.forEach((sub, subIndex) => {
-        const isSubUnique = isSubcategoryNameUnique(
-          venueId,
-          catIndex,
-          sub.name,
-          subIndex,
-        );
-        if (!isSubUnique) {
+        if (!isSubcategoryNameUnique(venueId, catIndex, sub.name, subIndex)) {
           errors[`${venueId}-${catIndex}-${subIndex}-name`] = {
             message: `Subcategory name "${sub.name}" is already used in this category`,
             duplicate: true,
           };
         }
 
-        // Check if subcategory seats exceed parent seats
         if (sub.seats > cat.seats) {
           errors[`${venueId}-${catIndex}-${subIndex}-seats`] = {
             message: `Subcategory seats exceed parent category seats`,
@@ -120,6 +128,18 @@ const ManageSeating = () => {
         }
       });
     });
+
+    // ✅ Check total seats across all categories against venue total_capacity
+    const totalSeats = hierarchy.reduce(
+      (sum, cat) => sum + (cat.seats || 0),
+      0,
+    );
+    if (totalSeats > venue.total_capacity) {
+      errors[`${venueId}-total-seats`] = {
+        message: `Total category seats exceed venue capacity by ${totalSeats - venue.total_capacity}`,
+        overflow: totalSeats - venue.total_capacity,
+      };
+    }
 
     return errors;
   };
@@ -217,6 +237,15 @@ const ManageSeating = () => {
     }
   }, [openVenueId, saveStatus]);
 
+  useEffect(() => {
+  venues.forEach(v => {
+    if (!venueHierarchies[v.id]) {
+      fetchVenueHierarchy(v.id);
+    }
+  });
+}, [venues]);
+
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-6">
       <div className="max-w-6xl mx-auto">
@@ -275,7 +304,17 @@ const ManageSeating = () => {
                       setOpenVenueId(next);
 
                       if (!isOpen && !venueHierarchies[venue.id]) {
-                        fetchVenueHierarchy(venue.id);
+                        setLoadingHierarchies((prev) => ({
+                          ...prev,
+                          [venue.id]: true,
+                        }));
+
+                        fetchVenueHierarchy(venue.id).finally(() => {
+                          setLoadingHierarchies((prev) => ({
+                            ...prev,
+                            [venue.id]: false,
+                          }));
+                        });
                       }
                     }}
                   >
@@ -295,12 +334,16 @@ const ManageSeating = () => {
                             <span className="font-bold text-gray-900 text-lg">
                               {venue.total_capacity}
                             </span>
+                            <p className="text-sm text-gray-500 mt-1">
+                              {getVenueRemainingSeats(venue.id)} seats available
+                            </p>
                           </div>
                         </div>
                         <div className="flex items-center gap-3 mt-1">
                           <span className="text-sm text-gray-600">
-                            {hierarchy.length} categor
-                            {hierarchy.length === 1 ? "y" : "ies"}
+                            {loadingHierarchies[venue.id]
+                              ? "Loading categories..."
+                              : `${hierarchy.length} categor${hierarchy.length === 1 ? "y" : "ies"}`}
                           </span>
                           <span className="text-gray-400">•</span>
                           <span
@@ -432,6 +475,24 @@ const ManageSeating = () => {
                         <AddCategory
                           existingCategories={hierarchy.map((cat) => cat.name)}
                           onAdd={(cat) => {
+                            // const venue = venues.find((v) => v.id === venue.id);
+                            // if (!venue) return;
+
+                            const usedSeats = hierarchy.reduce(
+                              (sum, c) => sum + (c.seats || 0),
+                              0,
+                            );
+                            const remainingSeats =
+                              venue.total_capacity - usedSeats;
+
+                            // Check total venue capacity
+                            if (cat.seats > remainingSeats) {
+                              alert(
+                                `Cannot add category: Only ${remainingSeats} seats remaining in venue`,
+                              );
+                              return;
+                            }
+
                             // Check if category name is unique
                             if (!isCategoryNameUnique(venue.id, cat.name)) {
                               alert(
@@ -440,15 +501,19 @@ const ManageSeating = () => {
                               return;
                             }
 
-                            addRootCategory(venue.id, {
-                              ...cat,
-                            });
+                            addRootCategory(venue.id, { ...cat });
                           }}
                         />
                       </div>
 
                       {/* Categories List */}
-                      {hierarchy.length === 0 ? (
+                      {loadingHierarchies[venue.id] ? (
+                        <div className="p-6 animate-pulse">
+                          <div className="h-4 bg-gray-200 rounded w-1/3 mb-3"></div>
+                          <div className="h-4 bg-gray-200 rounded w-1/2 mb-3"></div>
+                          <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+                        </div>
+                      ) : hierarchy.length === 0 ? (
                         <div className="py-12 text-center border-2 border-dashed border-gray-300 rounded-xl bg-white/50">
                           <div className="w-12 h-12 mx-auto mb-4 text-gray-400">
                             <svg
