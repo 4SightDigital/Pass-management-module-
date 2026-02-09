@@ -44,7 +44,7 @@ function BookTickets() {
     (sc) => sc.id === subCategoryId,
   );
 
-
+  const venue = event ? venues.find((v) => event.venue_id) : null;
   // Calculate available seats and price
   const fetchVenueHierarchy = useVenueStore((s) => s.fetchVenueHierarchy);
 
@@ -110,7 +110,6 @@ function BookTickets() {
     setSeatsRequested(1);
   }, [categoryId]);
 
-
   // Validate form
   const validateForm = () => {
     const newErrors = {};
@@ -132,8 +131,8 @@ function BookTickets() {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  console.log("eventssss111",event);
-  
+  console.log("eventssss111", event);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("🔥 Book Now clicked");
@@ -230,20 +229,17 @@ function BookTickets() {
   );
 
   // Calculate summary dynamically
-  const totalCapacity = dashboardData.reduce(
-    (acc, cat) => acc + sum(cat.children),
-    0,
-  );
-
-  const totalAvailable = dashboardData.reduce(
-    (acc, cat) => acc + cat.availableSeats,
-    0,
-  );
-
+  // const totalCapacity = dashboardData.reduce(
+  //   (acc, cat) => acc + sum(cat.children),
+  //   0,
+  // );
   const totalBooked = dashboardData.reduce(
     (acc, cat) => acc + (cat.bookedSeats ?? 0),
     0,
   );
+  const totalCapacity = venue?.total_capacity ?? 0;
+
+  const totalAvailable = totalCapacity - totalBooked;
 
   const overallOccupancy =
     totalCapacity > 0 ? ((totalBooked / totalCapacity) * 100).toFixed(1) : 0;
@@ -482,8 +478,8 @@ function BookTickets() {
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                          strokeWidth={1.5}
+                          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
                         />
                       </svg>
                     </div>
@@ -602,7 +598,9 @@ function BookTickets() {
 
                 {/* Reference Name */}
                 <div>
-                  <span>Reference Person Details</span>
+                  <span className="block text-sm font-bold text-gray-700 mb-2">
+                    Reference Person Details
+                  </span>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Name *
                   </label>
@@ -655,7 +653,7 @@ function BookTickets() {
                         max="120"
                         className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400 appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                       />
-                      <div className="absolute right-3 top-3.5">
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
                         <svg
                           className="w-4 h-4 text-gray-400"
                           fill="none"
@@ -692,7 +690,7 @@ function BookTickets() {
                         <option value="Female">Female</option>
                         <option value="Other">Other</option>
                       </select>
-                      <div className="absolute right-4 top-3 pointer-events-none">
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
                         <svg
                           className="w-4 h-4 text-gray-400"
                           fill="none"
@@ -830,7 +828,9 @@ function BookTickets() {
                   <h2 className="text-base font-semibold">Seat Availability</h2>
                 </div>
                 <p className="text-gray-600 text-xs">
-                  Real-time seat booking status of <span className="font-bold">{event ? event.name : ""}</span> Event 
+                  Real-time seat booking status of{" "}
+                  <span className="font-bold">{event ? event.name : ""}</span>{" "}
+                  Event
                 </p>
               </div>
 

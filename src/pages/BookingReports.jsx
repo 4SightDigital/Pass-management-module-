@@ -4,6 +4,8 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import SearchBar from "../components/search/SearchBar";
 import api from "../api/axios";
 import useVenueStore from "../store/useVenueStore";
+import Modal from "../components/Modal";
+import PersonDetail from "../components/PersonDetail";
 
 // Register ChartJS components
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -21,8 +23,10 @@ const BookingReports = () => {
   const [bookingData, setBookingData] = useState(emptyBookingData);
   const [filtRefDetails, setFiltRefDetails] = useState([]);
   const [error, setError] = useState(null);
-
   const [isLoading, setIsLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [personDetail, setPersonDetail] = useState(null);
 
   useEffect(() => {
     fetchEvents();
@@ -39,7 +43,7 @@ const BookingReports = () => {
 
     try {
       const res = await api(`/reports/person-wise/${eventId}`);
-      console.log("resssss", res.data.data);
+      console.log("resssss", res);
       const json = await res.data;
 
       if (!json.success) {
@@ -187,13 +191,25 @@ const BookingReports = () => {
     }
   };
 
-  const printReport = () => {
-  window.open(
-    `/reports/person-wise/print/${selectedEvent}`,
-    "_blank"
-  );
-};
-
+  const handleViewRecord = async (referencePerson) => {
+    try {
+      setLoading(true);
+      setOpen(true);
+      const res = await api.get(
+        `/reports/person/${selectedEvent}/${encodeURIComponent(referencePerson)}`,
+      );
+      console.log("Person detail:das", res.data);
+      setPersonDetail(res.data);
+      // Example:
+      // setPersonDetail(res.data);
+      // setShowModal(true);
+    } catch (err) {
+      console.error("Failed to load person record", err);
+      setPersonDetail(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-6">
@@ -527,7 +543,7 @@ const BookingReports = () => {
                   </div>
                   <div className="flex flex-col">
                     <div>
-                      <h2 className="text-lg font-semibold text-gray-900">
+                      <h2 className="text-lg font-semibold text-gray-900 text-center" >
                         Reference Persons Details
                       </h2>
                       <p className="text-sm text-gray-600">
@@ -535,17 +551,7 @@ const BookingReports = () => {
                         allocations
                       </p>
                     </div>
-                    {/* <div className="flex items-center space-x-2">
-                      {console.log("filtRefDetails234", filtRefDetails)}
-                      <SearchBar
-                        data={filtRefDetails}
-                        searchKeys={["name"]}
-                        // placeholder="deep search"
-                        onSearch={(results) =>
-                          setFiltRefDetails(results)
-                        }
-                      />
-                    </div> */}
+                    
                   </div>
                 </div>
               </div>
@@ -652,9 +658,7 @@ const BookingReports = () => {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center justify-center">
                             <button
-                              onClick={() =>
-                                console.log("View record for:", person.id)
-                              }
+                              onClick={() => handleViewRecord(person.name)}
                               className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg text-sm font-medium transition-colors"
                             >
                               <svg
@@ -686,6 +690,17 @@ const BookingReports = () => {
                     ))}
                   </tbody>
                 </table>
+
+                <Modal
+                  isOpen={open}
+                  onClose={() => {
+                    setOpen(false);
+                    setPersonDetail(null);
+                  }}
+                  title={personDetail?.reference_name || "Person Detail"}
+                >
+                  {<PersonDetail data={personDetail} loading={loading}/>}
+                </Modal>
               </div>
 
               {/* Table Footer */}
@@ -703,12 +718,13 @@ const BookingReports = () => {
                       onClick={() => downloadExcel("person-wise")}
                       className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium"
                     >
-                      Export Excel
+                      Export Person Wise Report
                     </button>
-                    <button 
-                    onClick={printReport}
-                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition-colors">
-                      Print Report
+                    <button
+                      onClick={() => downloadExcel("category-wise")}
+                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition-colors"
+                    >
+                      Export Category Wise Report
                     </button>
                   </div>
                 </div>
