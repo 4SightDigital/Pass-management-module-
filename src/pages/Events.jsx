@@ -21,9 +21,9 @@ const Events = () => {
   const [eventEditingId, setEventEditingId] = useState(null);
   const [eventEditData, setEventEditData] = useState({
     name: "",
-    venue: "",
     start_datetime: "",
     end_datetime: "",
+    venue_id: "",
   });
   const [eventEditError, setEventEditError] = useState("");
 
@@ -62,7 +62,6 @@ const Events = () => {
       });
 
       resetEventData();
-      
     } catch (error) {
       console.log("error in adding event", error);
     }
@@ -82,7 +81,8 @@ const Events = () => {
     setEventEditingId(event.id);
     setEventEditData({
       name: event.name,
-      venue: event.venue,
+      // venue: event.venue,
+      venue_id: event.venue_id,
       start_datetime: fromIso(event.start_datetime),
       end_datetime: fromIso(event.end_datetime),
     });
@@ -93,6 +93,7 @@ const Events = () => {
     setEventEditData({
       name: "",
       venue: "",
+      venue_id: "",
       start_datetime: "",
       end_datetime: "",
     });
@@ -107,11 +108,10 @@ const Events = () => {
         return;
       }
 
-      if (!eventEditData.venue) {
+      if (!eventEditData.venue_id) {
         setEventEditError("Venue is required");
         return;
       }
-
       if (!eventEditData.start_datetime) {
         setEventEditError("Start date is required");
         return;
@@ -132,7 +132,8 @@ const Events = () => {
 
       // Format dates for backend
       const updateData = {
-        ...eventEditData,
+        name: eventEditData.name,
+        venue_id: eventEditData.venue_id,
         start_datetime: toIso(eventEditData.start_datetime),
         end_datetime: toIso(eventEditData.end_datetime),
       };
@@ -341,7 +342,7 @@ const Events = () => {
                   {/* Start Date */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Start Date Time *
+                      Start Date & Time *
                     </label>
                     <div className="relative">
                       <input
@@ -373,7 +374,7 @@ const Events = () => {
                   {/* End Date */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      End Date Time *
+                      End Date & Time *
                     </label>
                     <div className="relative">
                       <input
@@ -559,14 +560,15 @@ const Events = () => {
                                   required
                                 />
                               </td>
-                              <td className="px-4 py-4">
+                              <td className=" py-4">
                                 <select
-                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
-                                  value={eventEditData.venue || ""}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg
+             focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                  value={eventEditData.venue_id || ""}
                                   onChange={(e) =>
                                     setEventEditData({
                                       ...eventEditData,
-                                      venue: e.target.value,
+                                      venue_id: Number(e.target.value),
                                     })
                                   }
                                   required

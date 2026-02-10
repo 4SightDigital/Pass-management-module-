@@ -94,13 +94,19 @@ function BookTickets() {
   };
   const availableSeats = selectedDashboardSubCategory
     ? selectedDashboardSubCategory.available
-    : 0;
+    : "";
   console.log("selectedDashboardSubCategory", selectedDashboardSubCategory);
   // Reset form when event changes
   useEffect(() => {
     setCategoryId(null);
     setSubCategoryId(null);
     setSeatsRequested(1);
+
+    if (!selectedEvent) {
+      // 🔥 CLEAR RIGHT SIDE DATA
+      setDashboardData([]);
+      return;
+    }
     fetchCategories(selectedEvent);
   }, [selectedEvent]);
 
@@ -233,16 +239,17 @@ function BookTickets() {
   //   (acc, cat) => acc + sum(cat.children),
   //   0,
   // );
-  const totalBooked = dashboardData.reduce(
-    (acc, cat) => acc + (cat.bookedSeats ?? 0),
-    0,
-  );
-  const totalCapacity = venue?.total_capacity ?? 0;
 
-  const totalAvailable = totalCapacity - totalBooked;
+  const totalBooked = selectedEvent
+    ? dashboardData.reduce((acc, cat) => acc + (cat.bookedSeats ?? 0), 0)
+    : 0;
 
+  const totalCapacity = selectedEvent ? (venue?.total_capacity ?? 0) : 0;
+  const totalAvailable = selectedEvent ? totalCapacity - totalBooked : 0;
   const overallOccupancy =
-    totalCapacity > 0 ? ((totalBooked / totalCapacity) * 100).toFixed(1) : 0;
+    selectedEvent && totalCapacity > 0
+      ? ((totalBooked / totalCapacity) * 100).toFixed(1)
+      : 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-6">
@@ -403,7 +410,11 @@ function BookTickets() {
                   <div className="relative">
                     <select
                       value={selectedEvent}
-                      onChange={(e) => setSelectedEvent(Number(e.target.value))}
+                      onChange={(e) =>
+                        setSelectedEvent(
+                          e.target.value ? Number(e.target.value) : "",
+                        )
+                      }
                       className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400 appearance-none ${
                         errors.selectedEvent
                           ? "border-red-300"
@@ -837,16 +848,17 @@ function BookTickets() {
               {/* Cards Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* {console.log("hiiiiiiiiiiiiiiiiiiii", hierarchy)} */}
-                {dashboardData.map((category) => (
-                  <CategoryCard
-                    key={category.id}
-                    categoryName={category.name}
-                    totalSeats={sum(category.children)}
-                    bookedSeats={category.bookedSeats}
-                    availableSeats={sumAvailable(category.children)}
-                    subCategories={category.children}
-                  />
-                ))}
+                {selectedEvent &&
+                  dashboardData.map((category) => (
+                    <CategoryCard
+                      key={category.id}
+                      categoryName={category.name}
+                      totalSeats={sum(category.children)}
+                      bookedSeats={category.bookedSeats}
+                      availableSeats={sumAvailable(category.children)}
+                      subCategories={category.children}
+                    />
+                  ))}
               </div>
 
               {/* Summary Footer */}
