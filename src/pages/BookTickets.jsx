@@ -259,7 +259,7 @@ function BookTickets() {
             Booking Management
           </h1>
           <p className="text-gray-600">
-            Create your bookings for Created Events
+            Create your bookings for Events
           </p>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

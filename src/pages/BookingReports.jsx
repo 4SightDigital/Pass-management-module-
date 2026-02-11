@@ -212,8 +212,12 @@ const BookingReports = () => {
   };
 
   const safeAvg = (total, count) =>
-  count > 0 ? (total / count).toFixed(1) : "0.0";
+    count > 0 ? (total / count).toFixed(1) : "0.0";
 
+  const hasChartData =
+    bookingData.referencePersons &&
+    bookingData.referencePersons.length > 0 &&
+    bookingData.totalSeatsIssued > 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-6">
@@ -347,7 +351,7 @@ const BookingReports = () => {
                       Booking Summary
                     </h2>
                     <p className="text-sm text-gray-600">
-                      VIP Passes and Seats Overview
+                      Passes and Seats Overview
                     </p>
                   </div>
                 </div>
@@ -376,7 +380,7 @@ const BookingReports = () => {
                           Total Reference Persons
                         </p>
                         <p className="text-xs text-gray-500">
-                          Issued VIP passes
+                          Issued passes
                         </p>
                       </div>
                     </div>
@@ -408,7 +412,7 @@ const BookingReports = () => {
                       </div>
                       <div>
                         <p className="text-sm font-medium text-gray-700">
-                          Total VIP Passes Issued
+                          Total Passes Issued
                         </p>
                         <p className="text-xs text-gray-500">
                           Across all reference persons
@@ -446,7 +450,7 @@ const BookingReports = () => {
                           Total Seats Issued
                         </p>
                         <p className="text-xs text-gray-500">
-                          To all VIP reference persons
+                          To all reference persons
                         </p>
                       </div>
                     </div>
@@ -494,8 +498,19 @@ const BookingReports = () => {
                   </div>
                 </div>
 
-                <div className="h-64">
-                  <Doughnut data={chartData} options={chartOptions} />
+                <div className="h-64 flex items-center justify-center">
+                  {hasChartData ? (
+                    <Doughnut data={chartData} options={chartOptions} />
+                  ) : (
+                    <div className="text-center text-gray-500">
+                      <p className="text-sm font-medium">
+                        No seat data available
+                      </p>
+                      <p className="text-xs mt-1">
+                        This event has no bookings yet
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Chart Stats */}
@@ -505,10 +520,10 @@ const BookingReports = () => {
                       Avg. Seats per Person
                     </div>
                     <div className="text-xl font-bold text-gray-900">
-                      {(
-                        bookingData.totalSeatsIssued /
-                        bookingData.totalReferencePersons
-                      ).toFixed(1)}
+                      {safeAvg(
+                        bookingData.totalVIPPasses,
+                        bookingData.totalReferencePersons,
+                      )}
                     </div>
                   </div>
                   <div className="text-center p-3 bg-gray-50 rounded-lg">
@@ -516,10 +531,10 @@ const BookingReports = () => {
                       Avg. Passes per Person
                     </div>
                     <div className="text-xl font-bold text-gray-900">
-                      {(
-                        bookingData.totalVIPPasses /
-                        bookingData.totalReferencePersons
-                      ).toFixed(1)}
+                      {safeAvg(
+                        bookingData.totalVIPPasses,
+                        bookingData.totalReferencePersons,
+                      )}
                     </div>
                   </div>
                 </div>
@@ -547,7 +562,7 @@ const BookingReports = () => {
                   </div>
                   <div className="flex flex-col">
                     <div>
-                      <h2 className="text-lg font-semibold text-gray-900 text-center" >
+                      <h2 className="text-lg font-semibold text-gray-900 text-left">
                         Reference Persons Details
                       </h2>
                       <p className="text-sm text-gray-600">
@@ -555,7 +570,6 @@ const BookingReports = () => {
                         allocations
                       </p>
                     </div>
-                    
                   </div>
                 </div>
               </div>
@@ -564,22 +578,22 @@ const BookingReports = () => {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
                     <tr>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-16">
+                      <th className=" py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider w-16">
                         #
                       </th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      <th className=" py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
                         Reference Person
                       </th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                        VIP Passes Issued
+                      <th className=" py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Passes Issued
                       </th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      <th className=" py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
                         Total Seats Issued
                       </th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      <th className=" py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
                         Seat Categories
                       </th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      <th className=" py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
                         Actions
                       </th>
                     </tr>
@@ -600,7 +614,7 @@ const BookingReports = () => {
 
                         {/* Reference Person Details */}
                         <td className="px-6 py-4">
-                          <div className="flex items-center">
+                          <div className="flex items-center ">
                             <div className="w-10 h-10 bg-gradient-to-r from-blue-100 to-blue-200 rounded-xl flex items-center justify-center mr-3">
                               <svg
                                 className="w-5 h-5 text-blue-600"
@@ -703,7 +717,7 @@ const BookingReports = () => {
                   }}
                   title={personDetail?.reference_name || "Person Detail"}
                 >
-                  {<PersonDetail data={personDetail} loading={loading}/>}
+                  {<PersonDetail data={personDetail} loading={loading} />}
                 </Modal>
               </div>
 

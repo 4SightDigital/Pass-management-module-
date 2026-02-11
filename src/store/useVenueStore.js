@@ -75,9 +75,9 @@ const useVenueStore = create((set, get) => ({
       set((state) => ({
         events: [...state.events, { ...res.data }],
       }));
-      alert("Event added Succesfully")
+      alert("Event added Succesfully");
     } catch (error) {
-      alert("Failed to Add Event")
+      alert("Failed to Add Event as the Time Overlaps with Another Event");
       console.log("error in adding event", error);
     }
   },
@@ -102,12 +102,17 @@ const useVenueStore = create((set, get) => ({
     }));
   },
   updateEvent: async (id, data) => {
-    const res = await updateEvent(id, data);
-    set((state) => ({
-      events: state.events.map((eve) =>
-        eve.id === id ? { ...eve, ...res.data } : eve,
-      ),
-    }));
+    try {
+      const res = await updateEvent(id, data);
+      set((state) => ({
+        events: state.events.map((eve) =>
+          eve.id === id ? { ...eve, ...res.data } : eve,
+        ),
+      }));
+    } catch (error) {
+      alert("Failed to Add Event as the Time Overlaps with Another Event");
+      console.log("error in adding event", error);
+    }
   },
   deleteEvent: async (id) => {
     await deleteEvent(id);

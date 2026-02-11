@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 // import { useNavigate } from 'react-router-dom';
-import logoDesign from "../assets/logoDesign.PNG";
+import logoDesign from "../assets/company-logo.webp";
 import { useAuth } from "../components/AuthContext";
 
 const LoginPage = () => {
@@ -83,16 +83,17 @@ const LoginPage = () => {
 
         <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 max-w-md w-full mx-4">
           {/* Header Section */}
-          <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left mb-8 gap-4">
-            <div className="flex-shrink-0 w-16 h-16">
+          <div className="flex-shrink-0 w-full">
               <img
                 src={logoDesign}
                 alt="CPMS Logo"
-                className="w-full h-full object-contain"
+                className="w-2/3 h-full object-contain m-auto"
               />
             </div>
+          <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left mb-8 gap-4 justify-center mt-4">
+            
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 text-center">
                 C P M S
                 <span className="block text-xs sm:text-sm font-normal text-gray-500 mt-1">
                   Complimentary Pass Management System
@@ -105,14 +106,14 @@ const LoginPage = () => {
           </div>
 
           {/* Welcome Section */}
-          <div className="mb-6">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
+          {/* <div className="mb-6"> */}
+            {/* <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
               Welcome Back
-            </h2>
-            <p className="text-gray-600 text-sm sm:text-base">
+            </h2> */}
+            {/* <p className="text-gray-600 text-sm sm:text-base">
               Please enter your credentials to continue
             </p>
-          </div>
+          </div> */}
 
           {/* Error Messages */}
           {error && (
@@ -305,7 +306,7 @@ const LoginPage = () => {
             </div>
 
             {/* Remember Me & Forgot Password */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            {/* <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div className="flex items-center">
                 <input
                   type="checkbox"
@@ -332,7 +333,7 @@ const LoginPage = () => {
               >
                 Forgot password?
               </button>
-            </div>
+            </div> */}
 
             {/* Submit Button */}
             <button
@@ -373,7 +374,7 @@ const LoginPage = () => {
         {/* Footer */}
         <div className="mt-8 text-center">
           <p className="text-gray-500 text-sm">
-            © {new Date().getFullYear()} Event Management. All rights reserved.
+            © {new Date().getFullYear()} Complimentary Pass Management System. All rights reserved.
           </p>
           <div className="mt-2 flex justify-center space-x-4">
             <button className="text-gray-400 hover:text-gray-600 text-sm">
