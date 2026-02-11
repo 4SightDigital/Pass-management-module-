@@ -6,6 +6,7 @@ import api from "../api/axios";
 import useVenueStore from "../store/useVenueStore";
 import Modal from "../components/Modal";
 import PersonDetail from "../components/PersonDetail";
+import { downloadFile } from "../utils/downloadFile";
 
 // Register ChartJS components
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -157,39 +158,51 @@ const BookingReports = () => {
       },
     },
   };
-  const downloadExcel = async (type) => {
-    if (!selectedEvent) return;
+  // const downloadExcel = async (type) => {
+  //   if (!selectedEvent) return;
 
-    try {
-      const response = await api.get(
-        `/reports/${type}/download/${selectedEvent}`,
-        {
-          responseType: "blob", // 🔑 IMPORTANT
-        },
-      );
+  //   try {
+  //     const response = await api.get(
+  //       `/reports/${type}/download/${selectedEvent}`,
+  //       {
+  //         responseType: "blob", // 🔑 IMPORTANT
+  //       },
+  //     );
 
-      const blob = new Blob([response.data], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      });
+  //     const blob = new Blob([response.data], {
+  //       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  //     });
 
-      const url = window.URL.createObjectURL(blob);
+  //     const url = window.URL.createObjectURL(blob);
 
-      const link = document.createElement("a");
-      link.href = url;
-      link.download =
-        type === "person-wise"
-          ? `person_wise_report_${selectedEvent}.xlsx`
-          : `category_wise_report_${selectedEvent}.xlsx`;
+  //     const link = document.createElement("a");
+  //     link.href = url;
+  //     link.download =
+  //       type === "person-wise"
+  //         ? `person_wise_report_${selectedEvent}.xlsx`
+  //         : `category_wise_report_${selectedEvent}.xlsx`;
 
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error(err);
-      alert("Failed to download report");
-    }
-  };
+  //     document.body.appendChild(link);
+  //     link.click();
+  //     link.remove();
+  //     window.URL.revokeObjectURL(url);
+  //   } catch (err) {
+  //     console.error(err);
+  //     alert("Failed to download report");
+  //   }
+  // };
+
+  const handleDownloadExcel = (type) => {
+  if (!selectedEvent) return;
+
+  downloadFile({
+    url: `/reports/${type}/download/${selectedEvent}`,
+    filename:
+      type === "person-wise"
+        ? `person_wise_report_${selectedEvent}.xlsx`
+        : `category_wise_report_${selectedEvent}.xlsx`,
+  });
+};
 
   const handleViewRecord = async (referencePerson) => {
     try {
@@ -614,7 +627,7 @@ const BookingReports = () => {
 
                         {/* Reference Person Details */}
                         <td className="px-6 py-4">
-                          <div className="flex items-center ">
+                          <div className="flex items-center pl-10">
                             <div className="w-10 h-10 bg-gradient-to-r from-blue-100 to-blue-200 rounded-xl flex items-center justify-center mr-3">
                               <svg
                                 className="w-5 h-5 text-blue-600"
@@ -733,13 +746,13 @@ const BookingReports = () => {
                   </div>
                   <div className="flex items-center gap-4">
                     <button
-                      onClick={() => downloadExcel("person-wise")}
+                      onClick={() => handleDownloadExcel("person-wise")}
                       className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium"
                     >
                       Export Person Wise Report
                     </button>
                     <button
-                      onClick={() => downloadExcel("category-wise")}
+                      onClick={() => handleDownloadExcel("category-wise")}
                       className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition-colors"
                     >
                       Export Category Wise Report

@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import useVenueStore from "../store/useVenueStore";
 import CategoryCard from "../components/CategoryCard";
 import { getDashboardCategories } from "../api/dashboard.api";
+import { downloadFile } from "../utils/downloadFile";
 
 function BookTickets() {
   const events = useVenueStore((state) => state.events);
@@ -251,6 +252,16 @@ function BookTickets() {
       ? ((totalBooked / totalCapacity) * 100).toFixed(1)
       : 0;
 
+  const downloadEventReport = () => {
+    console.log("calling dowload");
+    if (!selectedEvent) return;
+
+    downloadFile({
+      url: `/event-report/${selectedEvent}/download`,
+      filename: `event_report_${selectedEvent}.xlsx`,
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
@@ -258,9 +269,7 @@ function BookTickets() {
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
             Booking Management
           </h1>
-          <p className="text-gray-600">
-            Create your bookings for Events
-          </p>
+          <p className="text-gray-600">Create your bookings for Events</p>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Side - Form (1 column on left) */}
@@ -354,53 +363,6 @@ function BookTickets() {
                     </p>
                   )}
                 </div>
-
-                {/* Sub-Department */}
-                {/* {department && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Sub-Department of Guest *
-                    </label>
-                    <div className="relative">
-                      <select
-                        value={subDepartment}
-                        onChange={(e) => setSubDepartment(e.target.value)}
-                        className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400 appearance-none ${
-                          errors.subDepartment
-                            ? "border-red-300"
-                            : "border-gray-300"
-                        }`}
-                      >
-                        <option value="">Select sub-department</option>
-                        {departments[department].map((subDept) => (
-                          <option key={subDept} value={subDept}>
-                            {subDept}
-                          </option>
-                        ))}
-                      </select>
-                      <div className="absolute right-4 top-3 pointer-events-none">
-                        <svg
-                          className="w-5 h-5 text-gray-400"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                          />
-                        </svg>
-                      </div>
-                    </div>
-                    {errors.subDepartment && (
-                      <p className="mt-1 text-xs text-red-600">
-                        {errors.subDepartment}
-                      </p>
-                    )}
-                  </div>
-                )} */}
 
                 {/* Event Selection */}
                 <div>
@@ -838,11 +800,24 @@ function BookTickets() {
                 <div className="text-white text-center w-full px-4 py-2 rounded-lg shadow bg-gradient-to-r from-emerald-500 to-blue-500 mb-3">
                   <h2 className="text-base font-semibold">Seat Availability</h2>
                 </div>
-                <p className="text-gray-600 text-xs">
-                  Real-time seat booking status of{" "}
-                  <span className="font-bold">{event ? event.name : ""}</span>{" "}
-                  Event
-                </p>
+                <div className="flex justify-between">
+                  <p className="text-gray-600 text-sm font-medium">
+                    Real-time seat booking status of{" "}
+                    <span className="font-bold">{event ? event.name : ""}</span>{" "}
+                    Event
+                  </p>
+                  {event ? (
+                    <>{console.log("eventbuttonnnnn",venue)}
+                    <button
+                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition-colors"
+                      onClick={() => downloadEventReport(selectedEvent)}
+                    >
+                      Download Seat Availabilty Report
+                    </button></>
+                  ) : (
+                    ""
+                  )}
+                </div>
               </div>
 
               {/* Cards Grid */}
