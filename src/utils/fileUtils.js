@@ -84,3 +84,24 @@ export const hasVenueTimeOverlap = ({
     return newStart < existingEnd && newEnd > existingStart;
   });
 };
+
+
+export function getImageUrl(imagePath) {
+  if (!imagePath) return null;
+
+  // Use the current window origin (works in dev + production)
+  return `${window.location.origin}${imagePath}`;
+}
+
+export function getVenueImage(image) {
+  if (!image) return null;
+
+  const backendBase = import.meta.env.DEV
+    ? "http://localhost:5000"
+    : "";
+
+  // 🔥 encode the filename properly
+  const safeImage = encodeURIComponent(image);
+
+  return `${backendBase}/${safeImage}`;
+}

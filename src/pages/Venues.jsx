@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import useVenueStore from "../store/useVenueStore";
 import AddCategory from "../components/AddCategory";
 import AddSubCategory from "../components/AddSubCategory";
-import { convertFileToBase64 } from "../utils/fileUtils";
+import { convertFileToBase64, getVenueImage } from "../utils/fileUtils";
 import SearchBar from "../components/search/SearchBar";
 
 function Venues() {
@@ -31,6 +31,7 @@ function Venues() {
   const [filteredVenues, setFilteredVenues] = useState(venues);
   const [searchTerm, setSearchTerm] = useState("");
   const fileInputRef = useRef(null);
+  const [editVenueImg, setEditVenueImg] = useState(null);
 
   // const filteredVenues = venues.filter()
 
@@ -38,12 +39,17 @@ function Venues() {
     e.preventDefault();
 
     try {
-      await addVenue({
-        name,
-        location,
-        venue_type: venueType,
-        total_capacity: Number(totalSeats),
-      });
+      const formData = new FormData();
+      formData.append("name", name);
+      formData.append("location", location);
+      formData.append("venue_type", venueType);
+      formData.append("total_capacity", totalSeats);
+
+      if (venueImg) {
+        formData.append("image", venueImg);
+      }
+
+      await addVenue(formData);
 
       resetForm();
       alert("Venue added successfully");
@@ -53,14 +59,14 @@ function Venues() {
     }
   };
 
-  const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  // const handleImageUpload = async (e) => {
+  //   const file = e.target.files[0];
+  //   if (!file) return;
 
-    const base64 = await convertFileToBase64(file);
-    setVenueImg(base64);
-    console.log("imgggg", base64);
-  };
+  //   const base64 = await convertFileToBase64(file);
+  //   setVenueImg(base64);
+  //   console.log("imgggg", base64);
+  // };
 
   const startEdit = (venue) => {
     setEditingId(venue.id);
@@ -72,7 +78,7 @@ function Venues() {
     });
   };
 
-  const saveEdit = (id) => {
+  const saveEdit = async (id) => {
     if (!editData.name?.trim()) {
       setEditError("Venue name is required");
       return;
@@ -97,11 +103,28 @@ function Venues() {
       return;
     }
 
-    updateVenue(id, editData);
-    setEditingId(null);
-    console.log(editData);
-    setEditData({});
-    setEditError("");
+    try {
+      const formData = new FormData();
+      formData.append("name", editData.name);
+      formData.append("location", editData.location);
+      formData.append("venue_type", editData.venue_type);
+      formData.append("total_capacity", editData.total_capacity);
+      if (editVenueImg) formData.append("image", editVenueImg);
+
+      await updateVenue(id, formData); // Make sure your backend accepts multipart/form-data for update
+      setEditingId(null);
+      setEditData({});
+      setEditVenueImg(null);
+      setEditError("");
+    } catch (err) {
+      console.error(err);
+      setEditError("Failed to update venue");
+    }
+    // updateVenue(id, editData);
+    // setEditingId(null);
+    // console.log(editData);
+    // setEditData({});
+    // setEditError("");
   };
 
   const resetForm = () => {
@@ -303,7 +326,12 @@ function Venues() {
                     // required
                     className="text-gray-400 w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400 cursor-pointer bg-white file:mr-4 file:py-0 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100"
                     ref={fileInputRef}
-                    onChange={handleImageUpload}
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        setVenueImg(file); // store File object
+                      }
+                    }}
                   />
 
                   <div className="absolute right-4 top-3.5 pointer-events-none">
@@ -395,6 +423,9 @@ function Venues() {
                       Venue Type
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      Image
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                       Seats
                     </th>
                     <th className="px-6 py-4 text-xs font-semibold text-gray-700 uppercase tracking-wider text-center">
@@ -416,9 +447,10 @@ function Venues() {
                       {editingId === venue.id ? (
                         // Edit Mode
                         <>
-                          <td className="px-6 py-4">
+                          {/* Name field */}
+                          <td className="px-4 py-3">
                             <input
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                              className="w-40 px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-shadow"
                               value={editData.name || ""}
                               onChange={(e) =>
                                 setEditData({
@@ -426,11 +458,14 @@ function Venues() {
                                   name: e.target.value,
                                 })
                               }
+                              placeholder="Venue name"
                             />
                           </td>
-                          <td className="px-6 py-4">
+
+                          {/* Location field */}
+                          <td className="px-4 py-3">
                             <input
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                              className="w-40 px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-shadow"
                               value={editData.location || ""}
                               onChange={(e) =>
                                 setEditData({
@@ -438,11 +473,14 @@ function Venues() {
                                   location: e.target.value,
                                 })
                               }
+                              placeholder="Location"
                             />
                           </td>
-                          <td className="px-6 py-4">
+
+                          {/* Venue type field */}
+                          <td className="px-4 py-3">
                             <input
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                              className="w-36 px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-shadow"
                               value={editData.venue_type || ""}
                               onChange={(e) =>
                                 setEditData({
@@ -450,12 +488,55 @@ function Venues() {
                                   venue_type: e.target.value,
                                 })
                               }
+                              placeholder="Venue type"
                             />
                           </td>
-                          <td className="px-6 py-4">
+
+                          {/* Image upload field */}
+                          <td className="px-4 py-3">
+                            <div className="flex items-center">
+                              <label className="relative cursor-pointer">
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={(e) => {
+                                    const file = e.target.files[0];
+                                    if (file) setEditVenueImg(file);
+                                  }}
+                                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                />
+                                <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors">
+                                  <svg
+                                    className="w-4 h-4 text-gray-600"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                    />
+                                  </svg>
+                                  <span className="text-sm text-gray-600">
+                                    Choose image
+                                  </span>
+                                </div>
+                              </label>
+                              {editVenueImg && (
+                                <span className="text-sm text-gray-700 truncate max-w-[150px]">
+                                  {editVenueImg.name}
+                                </span>
+                              )}
+                            </div>
+                          </td>
+
+                          {/* Capacity field */}
+                          <td className="px-4 py-3">
                             <input
                               type="number"
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                              className="w-28 px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-shadow"
                               value={editData.total_capacity || ""}
                               onChange={(e) =>
                                 setEditData({
@@ -463,16 +544,20 @@ function Venues() {
                                   total_capacity: e.target.value,
                                 })
                               }
+                              placeholder="Capacity"
+                              min="0"
                             />
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex justify-center space-x-2">
+
+                          {/* Actions */}
+                          <td className="px-4 py-3 whitespace-nowrap">
+                            <div className="flex items-center gap-2">
                               <button
                                 onClick={() => saveEdit(venue.id)}
-                                className="group flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-lg hover:from-emerald-600 hover:to-emerald-700 transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5"
+                                className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-sm font-medium rounded-lg hover:from-emerald-600 hover:to-emerald-700 transition-all duration-200 hover:shadow-md"
                               >
                                 <svg
-                                  className="w-4 h-4 group-hover:scale-110 transition-transform"
+                                  className="w-3.5 h-3.5"
                                   fill="none"
                                   stroke="currentColor"
                                   viewBox="0 0 24 24"
@@ -484,17 +569,15 @@ function Venues() {
                                     d="M5 13l4 4L19 7"
                                   />
                                 </svg>
-                                <span className="text-sm font-medium">
-                                  Save
-                                </span>
+                                Save
                               </button>
 
                               <button
                                 onClick={() => setEditingId(null)}
-                                className="group flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5"
+                                className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-gray-500 to-gray-600 text-white text-sm font-medium rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all duration-200 hover:shadow-md"
                               >
                                 <svg
-                                  className="w-4 h-4 group-hover:scale-110 transition-transform"
+                                  className="w-3.5 h-3.5"
                                   fill="none"
                                   stroke="currentColor"
                                   viewBox="0 0 24 24"
@@ -506,9 +589,7 @@ function Venues() {
                                     d="M6 18L18 6M6 6l12 12"
                                   />
                                 </svg>
-                                <span className="text-sm font-medium">
-                                  Cancel
-                                </span>
+                                Cancel
                               </button>
                             </div>
                           </td>
@@ -547,6 +628,20 @@ function Venues() {
                             </span>
                           </td>
                           <td className="px-6 py-4">
+                            {venue.image ? (
+                              <img
+                                src={getVenueImage(venue.image)} // Make sure backend returns full URL or use a static path
+                                alt={venue.name}
+                                className="w-16 h-16 object-cover rounded-lg"
+                              />
+                            ) : (
+                              <span className="text-gray-400 text-sm">
+                                No image
+                              </span>
+                            )}
+                          </td>
+
+                          <td className="px-6 py-4">
                             <div className="flex items-center">
                               <span className="text-lg font-semibold text-gray-900">
                                 {venue.total_capacity}
@@ -581,7 +676,7 @@ function Venues() {
                                 onClick={() => {
                                   if (
                                     window.confirm(
-                                      "Are you sure you want to delete this venue?"
+                                      "Are you sure you want to delete this venue?",
                                     )
                                   ) {
                                     deleteVenue(venue.id);

@@ -39,61 +39,31 @@ const useVenueStore = create((set, get) => ({
     }
   },
   addVenue: async (venueData) => {
-    try {
-      set({ loading: true, error: null });
-      console.log("API BASE URL:", import.meta.env.VITE_API_BASE_URL);
+  try {
+    set({ loading: true, error: null });
 
-      const res = await createVenue(venueData);
+    await createVenue(venueData);
 
-      // backend response becomes source of truth
-      set((state) => ({
-        venues: [...state.venues, { ...res.data, hierarchy: [] }],
-        loading: false,
-      }));
-    } catch (err) {
-      console.error(err);
-      set({
-        error: "Failed to add venue",
-        loading: false,
-      });
-      throw err; // important so UI can react
-    }
-  },
+    // 🔥 Always refetch after create
+    await get().fetchVenues();
+
+  } catch (err) {
+    console.error(err);
+    set({
+      error: "Failed to add venue",
+      loading: false,
+    });
+    throw err;
+  }
+},
+
   deleteVenue: async (id) => {
     await deleteVenue(id);
     set((state) => ({
       venues: state.venues.filter((v) => v.id !== id),
     }));
   },
-
-  addEvent: async (event) => {
-    try {
-      set({ loading: true, error: null });
-
-      const res = await createEvent(event);
-
-      set((state) => ({
-        events: [...state.events, { ...res.data }],
-      }));
-      alert("Event added Succesfully");
-    } catch (error) {
-      alert("Failed to Add Event as the Time Overlaps with Another Event");
-      console.log("error in adding event", error);
-    }
-  },
-  fetchEvents: async () => {
-    try {
-      set({ loading: true });
-      const res = await getEvents();
-      // console.log("events data", res.data);
-      set({
-        events: res.data.map((e) => ({ ...e })),
-      });
-    } catch (error) {
-      console.log("error in fetching events", error);
-    }
-  },
-  updateVenue: async (id, data) => {
+    updateVenue: async (id, data) => {
     const res = await updateVenue(id, data);
     set((state) => ({
       venues: state.venues.map((v) =>
@@ -101,6 +71,40 @@ const useVenueStore = create((set, get) => ({
       ),
     }));
   },
+
+
+
+  addEvent: async (event) => {
+  try {
+    set({ loading: true, error: null });
+
+    await createEvent(event);
+
+    await get().fetchEvents();
+
+    alert("Event added Successfully");
+  } catch (error) {
+    alert("Failed to Add Event as the Time Overlaps with Another Event");
+    console.log("error in adding event", error);
+  }
+},
+
+  fetchEvents: async () => {
+  try {
+    set({ loading: true });
+    const res = await getEvents();
+
+    set({
+      events: res.data.map((e) => ({ ...e })),
+      loading: false,
+    });
+  } catch (error) {
+    console.log("error in fetching events", error);
+    set({ loading: false });
+  }
+},
+
+
   updateEvent: async (id, data) => {
     try {
       const res = await updateEvent(id, data);

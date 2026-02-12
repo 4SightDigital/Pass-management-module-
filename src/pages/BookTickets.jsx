@@ -4,6 +4,7 @@ import useVenueStore from "../store/useVenueStore";
 import CategoryCard from "../components/CategoryCard";
 import { getDashboardCategories } from "../api/dashboard.api";
 import { downloadFile } from "../utils/downloadFile";
+import { getImageUrl, getVenueImage } from "../utils/fileUtils";
 
 function BookTickets() {
   const events = useVenueStore((state) => state.events);
@@ -28,7 +29,7 @@ function BookTickets() {
   const [errors, setErrors] = useState({});
   // Get selected event and venue data
   const selectedEventId = selectedEvent ? Number(selectedEvent) : null;
-
+  const { fetchVenues, fetchEvents } = useVenueStore();
   const event = events.find((e) => e.id === selectedEventId);
   // const venue = event ? venues.find((v) => v.id === event.venue_id) : null;
   const venue_id = event?.venue_id ? String(event.venue_id) : null;
@@ -45,7 +46,12 @@ function BookTickets() {
     (sc) => sc.id === subCategoryId,
   );
 
-  const venue = event ? venues.find((v) => event.venue_id) : null;
+  // const venue = event ? venues.find((v) => event.venue_id) : null;
+
+  const venue = event
+  ? venues.find((v) => v.id === event.venue_id)
+  : null;
+
   // Calculate available seats and price
   const fetchVenueHierarchy = useVenueStore((s) => s.fetchVenueHierarchy);
 
@@ -262,6 +268,13 @@ function BookTickets() {
     });
   };
 
+  useEffect(() => {
+  fetchEvents();
+  fetchVenues();
+}, []);
+
+
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
@@ -271,7 +284,12 @@ function BookTickets() {
           </h1>
           <p className="text-gray-600">Create your bookings for Events</p>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6" style={{
+                backgroundImage: `url(${getVenueImage(venue?.image)})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat"
+              }}>
           {/* Left Side - Form (1 column on left) */}
 
           <div className="lg:col-span-1">
@@ -794,7 +812,11 @@ function BookTickets() {
           {/* Right Side - Information (2 columns on right) */}
 
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-2xl shadow-lg p-6">
+            <div
+              className="relative rounded-2xl shadow-lg p-6 bg-cover bg-center"
+              
+            >
+            { console.log("BG IMAGE:", getVenueImage(venue?.image))}
               {/* Header */}
               <div className="mb-6">
                 <div className="text-white text-center w-full px-4 py-2 rounded-lg shadow bg-gradient-to-r from-emerald-500 to-blue-500 mb-3">
@@ -807,13 +829,18 @@ function BookTickets() {
                     Event
                   </p>
                   {event ? (
-                    <>{console.log("eventbuttonnnnn",venue)}
-                    <button
-                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition-colors"
-                      onClick={() => downloadEventReport(selectedEvent)}
-                    >
-                      Download Seat Availabilty Report
-                    </button></>
+                    <>
+                      {console.log(
+                        "eventbuttonnnnn",
+                        getVenueImage(venue?.image),
+                      )}
+                      <button
+                        className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition-colors"
+                        onClick={() => downloadEventReport(selectedEvent)}
+                      >
+                        Download Seat Availabilty Report
+                      </button>
+                    </>
                   ) : (
                     ""
                   )}
