@@ -313,7 +313,7 @@ function BookTickets() {
           {/* Left Side - Form (1 column on left) */}
 
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-6">
+            <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-6 ml-4 mt-4 mb-4 opacity-85">
               {/* Form Header */}
               <div className="mb-6">
                 <div className="text-white text-center w-full px-4 py-3 rounded-xl shadow-lg bg-gradient-to-r from-emerald-500 to-blue-500 mb-4">
@@ -875,8 +875,8 @@ function BookTickets() {
 
           {/* Right Side - Information (2 columns on right) */}
 
-          <div className="lg:col-span-2">
-            <div className="relative rounded-2xl shadow-lg p-6 bg-cover bg-center">
+          <div className="lg:col-span-2 ">
+            <div className="relative rounded-2xl shadow-lg p-6 bg-cover bg-center bg-white opacity-85 mt-4 mr-4">
               {console.log("BG IMAGE:", getVenueImage(venue?.image))}
               {/* Header */}
               <div className="mb-6">
@@ -931,25 +931,25 @@ function BookTickets() {
                     <div className="text-2xl font-bold text-gray-900">
                       {totalCapacity.toLocaleString()}
                     </div>
-                    <div className="text-xs text-gray-600">Total Capacity</div>
+                    <div className="text-s text-black">Total Capacity</div>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-emerald-600">
                       {totalAvailable.toLocaleString()}
                     </div>
-                    <div className="text-xs text-gray-600">Available Seats</div>
+                    <div className="text-s text-black">Available Seats</div>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-red-600">
                       {totalBooked.toLocaleString()}
                     </div>
-                    <div className="text-xs text-gray-600">Booked Seats</div>
+                    <div className="text-s text-black">Booked Seats</div>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-blue-600">
                       {overallOccupancy}%
                     </div>
-                    <div className="text-xs text-gray-600">
+                    <div className="text-s text-black">
                       Overall Occupancy
                     </div>
                   </div>
