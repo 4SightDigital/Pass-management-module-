@@ -323,7 +323,7 @@ function Venues() {
                   <input
                     type="file"
                     accept="image/*"
-                    // required
+                    required
                     className="text-gray-400 w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400 cursor-pointer bg-white file:mr-4 file:py-0 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100"
                     ref={fileInputRef}
                     onChange={(e) => {

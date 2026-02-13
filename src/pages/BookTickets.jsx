@@ -5,6 +5,7 @@ import CategoryCard from "../components/CategoryCard";
 import { getDashboardCategories } from "../api/dashboard.api";
 import { downloadFile } from "../utils/downloadFile";
 import { getImageUrl, getVenueImage } from "../utils/fileUtils";
+import { useNavigate } from "react-router-dom";
 
 function BookTickets() {
   const events = useVenueStore((state) => state.events);
@@ -45,12 +46,11 @@ function BookTickets() {
   const selectedSubCategory = selectedCategory?.children?.find(
     (sc) => sc.id === subCategoryId,
   );
+  const navigate = useNavigate();
 
   // const venue = event ? venues.find((v) => event.venue_id) : null;
 
-  const venue = event
-  ? venues.find((v) => v.id === event.venue_id)
-  : null;
+  const venue = event ? venues.find((v) => v.id === event.venue_id) : null;
 
   // Calculate available seats and price
   const fetchVenueHierarchy = useVenueStore((s) => s.fetchVenueHierarchy);
@@ -269,11 +269,28 @@ function BookTickets() {
   };
 
   useEffect(() => {
-  fetchEvents();
-  fetchVenues();
-}, []);
+    fetchEvents();
+    fetchVenues();
+  }, []);
 
+  const noEvents = events.length === 0;
+  const showEventSection = events.length > 0;
 
+  const showCategorySection =
+    selectedEvent && !hierarchyLoading && hierarchy.length > 0;
+
+  const noCategories =
+    selectedEvent && !hierarchyLoading && hierarchy.length === 0;
+  console.log("noCategoriesnoCategories", noCategories);
+
+  const noSubCategories =
+    selectedCategory &&
+    (!selectedCategory.children || selectedCategory.children.length === 0);
+
+  const showSubCategorySection =
+    selectedCategory &&
+    selectedCategory.children &&
+    selectedCategory.children.length > 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-4 md:p-6">
@@ -284,12 +301,15 @@ function BookTickets() {
           </h1>
           <p className="text-gray-600">Create your bookings for Events</p>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6" style={{
-                backgroundImage: `url(${getVenueImage(venue?.image)})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                backgroundRepeat: "no-repeat"
-              }}>
+        <div
+          className="grid grid-cols-1 lg:grid-cols-3 gap-6"
+          style={{
+            backgroundImage: `url(${getVenueImage(venue?.image)})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+          }}
+        >
           {/* Left Side - Form (1 column on left) */}
 
           <div className="lg:col-span-1">
@@ -383,114 +403,139 @@ function BookTickets() {
                 </div>
 
                 {/* Event Selection */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Select Event *
-                  </label>
-                  <div className="relative">
-                    <select
-                      value={selectedEvent}
-                      onChange={(e) =>
-                        setSelectedEvent(
-                          e.target.value ? Number(e.target.value) : "",
-                        )
-                      }
-                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400 appearance-none ${
-                        errors.selectedEvent
-                          ? "border-red-300"
-                          : "border-gray-300"
-                      }`}
-                    >
-                      <option value="">Choose an event</option>
-                      {events.map((event) => (
-                        <option key={event.id} value={event.id}>
-                          {event.name}
-                        </option>
-                      ))}
-                    </select>
-                    <div className="absolute right-4 top-3 pointer-events-none">
-                      <svg
-                        className="w-5 h-5 text-gray-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+                {/* Show dropdown ONLY if events exist */}
+                {showEventSection && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Select Event *
+                    </label>
+
+                    <div className="relative">
+                      <select
+                        value={selectedEvent}
+                        onChange={(e) =>
+                          setSelectedEvent(
+                            e.target.value ? Number(e.target.value) : "",
+                          )
+                        }
+                        className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400 appearance-none ${
+                          errors.selectedEvent
+                            ? "border-red-300"
+                            : "border-gray-300"
+                        }`}
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                        />
-                      </svg>
+                        <option value="">Choose an event</option>
+                        {events.map((event) => (
+                          <option key={event.id} value={event.id}>
+                            {event.name}
+                          </option>
+                        ))}
+                      </select>
+
+                      <div className="absolute right-4 top-3 pointer-events-none">
+                        <svg
+                          className="w-5 h-5 text-gray-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          />
+                        </svg>
+                      </div>
                     </div>
+
+                    {errors.selectedEvent && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {errors.selectedEvent}
+                      </p>
+                    )}
                   </div>
-                  {errors.selectedEvent && (
-                    <p className="mt-1 text-xs text-red-600">
-                      {errors.selectedEvent}
+                )}
+
+                {/* Show message if NO events */}
+                {noEvents && (
+                  <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-sm text-red-600">
+                      No events available. Please create an event from{" "}
+                      <span
+                        className="underline cursor-pointer font-medium"
+                        onClick={() => navigate("/events")}
+                      >
+                        Events
+                      </span>{" "}
+                      Page .
                     </p>
-                  )}
-                </div>
+                  </div>
+                )}
 
                 {/* Category Selection */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Seating Category *
-                  </label>
-                  <div className="relative">
-                    <select
-                      value={categoryId || ""}
-                      onChange={(e) => setCategoryId(Number(e.target.value))}
-                      disabled={!selectedEvent || hierarchyLoading}
-                      className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400 appearance-none ${
-                        errors.categoryId ? "border-red-300" : "border-gray-300"
-                      } ${
-                        !selectedEvent ? "bg-gray-50 cursor-not-allowed" : ""
-                      }`}
-                    >
-                      <option value="">
-                        {hierarchyLoading
-                          ? "Loading categories..."
-                          : "Select seat category"}
-                      </option>
-                      {console.log("hhhhhhhhhhhhhh", hierarchy)}
-                      {hierarchy.map((cat) => (
-                        <option key={cat.id} value={cat.id}>
-                          {cat.name}
-                        </option>
-                      ))}
-                    </select>
-                    <div className="absolute right-4 top-3 pointer-events-none">
-                      <svg
-                        className="w-5 h-5 text-gray-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
+                {/* If categories exist → show dropdown */}
+                {showCategorySection && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Seating Category *
+                    </label>
+
+                    <div className="relative">
+                      <select
+                        value={categoryId || ""}
+                        onChange={(e) => setCategoryId(Number(e.target.value))}
+                        className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400 appearance-none ${
+                          errors.categoryId
+                            ? "border-red-300"
+                            : "border-gray-300"
+                        }`}
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={1.5}
-                          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
-                        />
-                      </svg>
+                        <option value="">Select seat category</option>
+
+                        {hierarchy.map((cat) => (
+                          <option key={cat.id} value={cat.id}>
+                            {cat.name}
+                          </option>
+                        ))}
+                      </select>
                     </div>
+
+                    {errors.categoryId && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {errors.categoryId}
+                      </p>
+                    )}
                   </div>
-                  {errors.categoryId && (
-                    <p className="mt-1 text-xs text-red-600">
-                      {errors.categoryId}
+                )}
+
+                {/* If NO categories → show error message */}
+                {noCategories && (
+                  <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-sm text-red-600">
+                      Please add categories from{" "}
+                      <span
+                        className="underline cursor-pointer font-medium"
+                        onClick={() => navigate("/manageSeats")}
+                      >
+                        Manage Seating
+                      </span>{" "}
+                      for venue named <span>{venue.name}</span>.
                     </p>
-                  )}
-                </div>
+                  </div>
+                )}
 
                 {/* Sub-Category Selection */}
-                {selectedCategory && (
+                {/* If subcategories exist → show dropdown */}
+                {showSubCategorySection && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Seating Sub-Category *
                     </label>
+
                     <div className="relative">
                       <select
-                        value={subCategoryId}
+                        value={subCategoryId || ""}
                         onChange={(e) =>
                           setSubCategoryId(Number(e.target.value))
                         }
@@ -501,12 +546,14 @@ function BookTickets() {
                         }`}
                       >
                         <option value="">Sub-category of seats</option>
-                        {selectedCategory.children?.map((subCat) => (
+
+                        {selectedCategory.children.map((subCat) => (
                           <option key={subCat.id} value={subCat.id}>
                             {subCat.name}
                           </option>
                         ))}
                       </select>
+
                       <div className="absolute right-4 top-3 pointer-events-none">
                         <svg
                           className="w-5 h-5 text-gray-400"
@@ -523,11 +570,28 @@ function BookTickets() {
                         </svg>
                       </div>
                     </div>
+
                     {errors.subCategoryId && (
                       <p className="mt-1 text-xs text-red-600">
                         {errors.subCategoryId}
                       </p>
                     )}
+                  </div>
+                )}
+
+                {/* If NO subcategories → show error message */}
+                {noSubCategories && (
+                  <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-sm text-red-600">
+                      Please add sub-categories from{" "}
+                      <span
+                        className="underline cursor-pointer font-medium"
+                        onClick={() => navigate("/manageSeats")}
+                      >
+                        Manage Seating
+                      </span>
+                      .
+                    </p>
                   </div>
                 )}
 
@@ -812,11 +876,8 @@ function BookTickets() {
           {/* Right Side - Information (2 columns on right) */}
 
           <div className="lg:col-span-2">
-            <div
-              className="relative rounded-2xl shadow-lg p-6 bg-cover bg-center"
-              
-            >
-            { console.log("BG IMAGE:", getVenueImage(venue?.image))}
+            <div className="relative rounded-2xl shadow-lg p-6 bg-cover bg-center">
+              {console.log("BG IMAGE:", getVenueImage(venue?.image))}
               {/* Header */}
               <div className="mb-6">
                 <div className="text-white text-center w-full px-4 py-2 rounded-lg shadow bg-gradient-to-r from-emerald-500 to-blue-500 mb-3">

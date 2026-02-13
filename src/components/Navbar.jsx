@@ -23,9 +23,10 @@ const Navbar = ({
 `}
     >
       <div className="px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="grid grid-cols-[1fr_auto_1fr] items-center w-full py-3">
+          <div className=""></div>
           {/* Left Section */}
-          <div className="flex items-center">
+          <div className="justify-self-center">
             {/* Mobile Menu Button */}
             <button
               onClick={() => setSidebarOpen(true)}
@@ -50,32 +51,18 @@ const Navbar = ({
             {/* Logo */}
             <div className="flex items-center ml-4 md:ml-0">
               <Link to="/" className="flex items-center space-x-2">
-                {/* <div className="w-8 h-8 bg-gradient-to-r from-emerald-500 to-blue-500 rounded-lg flex items-center justify-center">
-                  <svg
-                    className="w-5 h-5 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"
-                    />
-                  </svg>
-                </div> */}
-                <span className="text-lg md:text-xl font-bold bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
+               
+                <div className="text-lg md:text-xl font-bold bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
                   Complimentary Pass Management System
-                </span>
+                </div>
               </Link>
             </div>
           </div>
 
           {/* Right Section */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-4 justify-self-end">
             {/* Notifications */}
-            <button className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
+            {/* <button className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
               <svg
                 className="w-5 h-5"
                 fill="none"
@@ -90,7 +77,7 @@ const Navbar = ({
                 />
               </svg>
               <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-            </button>
+            </button> */}
 
             {/* User Profile */}
             <div className="relative group">
@@ -121,7 +108,7 @@ const Navbar = ({
 
               {/* Dropdown Menu */}
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg py-2 border border-gray-200 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 z-50">
-                <Link
+                {/* <Link
                   to="/profile"
                   className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
@@ -139,8 +126,8 @@ const Navbar = ({
                     />
                   </svg>
                   Your Profile
-                </Link>
-                <Link
+                </Link> */}
+                {/* <Link
                   to="/settings"
                   className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                 >
@@ -164,7 +151,7 @@ const Navbar = ({
                     />
                   </svg>
                   Settings
-                </Link>
+                </Link> */}
                 <div className="border-t border-gray-200 my-1"></div>
                 <button
                   onClick={() => {
