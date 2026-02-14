@@ -167,35 +167,50 @@ function Sidebar({ isOpen, onClose, isCollapsed, onCollapse }) {
 
           {/* Footer/User Section */}
           <div
-            className={`p-4 border-t border-gray-200 ${isCollapsed ? "px-2" : ""}`}
+            className={`p-4 border-t border-gray-200 bg-blue-100 justify-center ${isCollapsed ? "px-2" : ""}`}
           >
             <div
-              className={`flex items-center ${isCollapsed ? "justify-center" : "justify-between"}`}
+              className={`flex items-center border-t border-gray-200  ${
+                isCollapsed ? "justify-center" : "justify-between"
+              }`}
             >
               {!isCollapsed && (
                 <>
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                      A
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">Admin User</p>
-                      <p className="text-xs text-gray-500">admin@example.com</p>
+                  <div className="flex items-center gap-3 min-w-0">
+                    {/* Company Logo/Avatar with your brand colors */}
+
+                    <div className="truncate flex flex-col  gap-y-1 justify-center">
+                      <p className="text-m font-semibold text-gray-800 truncate flex items-center gap-2">
+                        Foresight Digital
+                       </p>
+
+                      <div className="flex items-center gap-1 text-xs text-gray-500">
+                        <span>©2026</span>
+                        <span className="w-1 h-1 bg-emerald-400 rounded-full"></span>
+                        <span>All rights reserved</span>
+                      </div>
+
+                      <div className="flex items-center gap-1 text-xs text-gray-500">
+                        <span>Version 1.0.0</span>
+                      </div>
                     </div>
                   </div>
-                  <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                    <LogOut
-                      onClick={() => logout()}
-                      className="w-4 h-4 text-gray-500"
-                    />
-                  </button>
+
+                  {/* <button
+                    onClick={() => logout()}
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 group flex-shrink-0"
+                    title="Logout"
+                  >
+                    <LogOut className="w-4 h-4 text-gray-500 group-hover:text-gray-700 transition-colors" />
+                  </button> */}
                 </>
               )}
-              {isCollapsed && (
-                <div className="w-8 h-8 bg-gradient-to-r from-purple-400 to-pink-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                  A
+
+              {/* {isCollapsed && (
+                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-white font-semibold text-base shadow-md hover:shadow-lg transition-shadow cursor-default">
+                  FD
                 </div>
-              )}
+              )} */}
             </div>
           </div>
         </div>

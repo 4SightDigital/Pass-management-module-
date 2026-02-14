@@ -140,7 +140,9 @@ function BookTickets() {
     if (!refName.trim()) newErrors.refName = "Reference name is required";
     if (!refContact.trim()) newErrors.refContact = "Contact number is required";
     if (!refGender) newErrors.refGender = "Gender is required";
-
+    if (refContact.length < 10) {
+      newErrors.refContact = "Contact number must be at least 10 digits";
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -743,20 +745,29 @@ function BookTickets() {
                         <option value="">Select gender</option>
                         <option value="Male">Male</option>
                         <option value="Female">Female</option>
-                        <option value="Other">Other</option>
                       </select>
-                      <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
                         <svg
-                          className="w-4 h-4 text-gray-400"
+                          className="w-6 h-6 text-gray-500"
                           fill="none"
                           stroke="currentColor"
+                          strokeWidth="1.3"
                           viewBox="0 0 24 24"
                         >
+                          {/* Male part */}
+                          <circle cx="8" cy="12" r="5" />
                           <path
                             strokeLinecap="round"
                             strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"
+                            d="M15 5l-3 3m0-3h3v3"
+                          />
+
+                          {/* Female part */}
+                          <circle cx="16" cy="12" r="5" />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M16 17v4m-2-2h4"
                           />
                         </svg>
                       </div>
@@ -778,9 +789,12 @@ function BookTickets() {
                     <input
                       type="tel"
                       inputMode="numeric"
-                      pattern="[0-9]*"
+                      maxLength={10}
                       value={refContact}
-                      onChange={(e) => setRefContact(e.target.value)}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, "");
+                        setRefContact(value);
+                      }}
                       placeholder="Enter contact number"
                       className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 hover:border-gray-400 ${
                         errors.refContact ? "border-red-300" : "border-gray-300"
@@ -866,7 +880,7 @@ function BookTickets() {
                     type="submit"
                     className="px-4 py-3 bg-gradient-to-r from-emerald-500 to-blue-500 text-white font-medium rounded-xl hover:from-emerald-600 hover:to-blue-600 transition-all duration-300 transform hover:-translate-y-1 active:translate-y-0 shadow-lg hover:shadow-xl"
                   >
-                    Book Tickets
+                    Book Pass
                   </button>
                 </div>
               </form>

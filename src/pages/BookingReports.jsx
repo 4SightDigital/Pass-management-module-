@@ -534,7 +534,7 @@ const BookingReports = () => {
                     </div>
                     <div className="text-xl font-bold text-gray-900">
                       {safeAvg(
-                        bookingData.totalVIPPasses,
+                        bookingData.totalSeatsIssued,
                         bookingData.totalReferencePersons,
                       )}
                     </div>
