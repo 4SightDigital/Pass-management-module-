@@ -113,9 +113,15 @@ function AppLayout() {
                   </ProtectedRoute>
                 }
               />
-              <Route path="/manageSeats" element={<ManageSeating />} />
-              <Route path="/events/:eventId/book" element={<BookTickets />} />
-              <Route path="/reports" element={<BookingReports />} />
+              <Route path="/manageSeats" element={<ProtectedRoute>
+                    <ManageSeating />
+                  </ProtectedRoute>} />
+              <Route path="/events/:eventId/book" element={<ProtectedRoute>
+                    <BookTickets />
+                  </ProtectedRoute>} />
+              <Route path="/reports" element={<ProtectedRoute>
+                    <BookingReports />
+                  </ProtectedRoute>} />
 
               <Route path="*" element={<NotFoundPage />} />
             </Routes>

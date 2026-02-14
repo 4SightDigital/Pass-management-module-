@@ -263,7 +263,7 @@ const BookingReports = () => {
                   <select
                     value={selectedEvent}
                     onChange={handleEventChange}
-                    className="w-full px-4 py-3 pl-11 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 appearance-none"
+                    className="w-full px-4 py-3 pl-11 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all duration-300 appearance-none bg-teal-50"
                   >
                     <option value="">Choose an event...</option>
                     {events.map((event) => (

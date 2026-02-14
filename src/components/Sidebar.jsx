@@ -167,7 +167,7 @@ function Sidebar({ isOpen, onClose, isCollapsed, onCollapse }) {
 
           {/* Footer/User Section */}
           <div
-            className={`p-4 border-t border-gray-200 bg-blue-100 justify-center ${isCollapsed ? "px-2" : ""}`}
+            className={`px-4 border-t border-gray-200 justify-center ${isCollapsed ? "px-2" : ""}`}
           >
             <div
               className={`flex items-center border-t border-gray-200  ${
