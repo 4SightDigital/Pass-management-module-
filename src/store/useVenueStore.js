@@ -158,7 +158,7 @@ const useVenueStore = create((set, get) => ({
         guest_name: guestDetails.name,
         department: guestDetails.department,
         contact_number: guestDetails.contact,
-
+        
         reference_person: referenceDetails?.name || null,
         age: referenceDetails?.age || null,
         gender: referenceDetails?.gender || null,
@@ -176,42 +176,6 @@ const useVenueStore = create((set, get) => ({
   // -------------------- END CREATE BOOKING --------------------
 
   // Add subcategory to a category
-  addSubCategoryToCategory: (venueId, parentId, sub) => {
-    const addRecursive = (nodes) =>
-      nodes.map((node) => {
-        if (node.id === parentId) {
-          return {
-            ...node,
-            children: [
-              ...(node.children || []),
-              {
-                name: sub.name,
-                category_type: "subcategory",
-                seats: sub.seats,
-                children: [],
-              },
-            ],
-          };
-        }
-
-        if (node.children?.length) {
-          return {
-            ...node,
-            children: addRecursive(node.children),
-          };
-        }
-
-        return node;
-      });
-
-    set((state) => ({
-      venues: state.venues.map((v) =>
-        v.id === venueId
-          ? { ...v, hierarchy: addRecursive(v.hierarchy || []) }
-          : v,
-      ),
-    }));
-  },
 
   // EVENTS    slice begins hereee=============================================
 }));

@@ -638,12 +638,12 @@ function BookTickets() {
                   {selectedSubCategory && (
                     <div className="mt-1 text-xs text-gray-500 space-y-1">
                       <p>Available: {availableSeats} seats</p>
-                      {/* <p>
+                      <p>
                         Price per seat:{" "}
                         <span className="font-semibold">
-                          ${selectedSubCategory.price}
+                           ₹ {selectedSubCategory.price}
                         </span>
-                      </p> */}
+                      </p>
                     </div>
                   )}
                   {errors.seatsRequested && (

@@ -1242,6 +1242,35 @@ This change will be applied only after saving the layout.`)
                                                   </div>
                                                 )}
                                               </div>
+
+                                              <div>
+                                                <div className="text-xs text-gray-500 mb-1">
+                                                  Price (₹)
+                                                </div>
+                                                {isEditing ? (
+                                                  <input
+                                                    type="number"
+                                                    min="0"
+                                                    step="0.01"
+                                                    value={editingSub.price}
+                                                    onChange={(e) =>
+                                                      setEditingSub({
+                                                        ...editingSub,
+                                                        price:
+                                                          Number(
+                                                            e.target.value,
+                                                          ) || 0,
+                                                      })
+                                                    }
+                                                    className="px-3 py-1.5 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm w-24 bg-white"
+                                                  />
+                                                ) : (
+                                                  <div className="text-lg font-semibold text-gray-800">
+                                                    ₹ {sub.price}
+                                                  </div>
+                                                )}
+                                              </div>
+
                                               <div className="flex gap-2">
                                                 {isEditing ? (
                                                   <>
@@ -1255,6 +1284,8 @@ This change will be applied only after saving the layout.`)
                                                             name: editingSub.name,
                                                             seats:
                                                               editingSub.seats,
+                                                            price:
+                                                              editingSub.price,
                                                           },
                                                         );
                                                         setEditingSub(null);
@@ -1281,6 +1312,7 @@ This change will be applied only after saving the layout.`)
                                                         subIndex,
                                                         name: sub.name,
                                                         seats: sub.seats,
+                                                        price: sub.price,
                                                       })
                                                     }
                                                     className="px-3 py-1.5 bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 hover:text-blue-800 text-xs font-semibold rounded-lg hover:from-blue-100 hover:to-blue-200 transition-all flex items-center gap-1 border border-blue-200"

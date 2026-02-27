@@ -17,7 +17,7 @@ const Events = () => {
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [filteredEvents, setFilteredEvents] = useState(events);
-
+  
   const [eventEditingId, setEventEditingId] = useState(null);
   const [eventEditData, setEventEditData] = useState({
     name: "",
@@ -491,7 +491,7 @@ const Events = () => {
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                         Venue Name
                       </th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      <th className="w-50 px-4 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
                         Date Range
                       </th>
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
@@ -546,7 +546,7 @@ const Events = () => {
                           {eventEditingId === event.id ? (
                             // EDIT MODE
                             <>
-                              <td className="px-6 py-4">
+                              <td className="px-1 py-4">
                                 <input
                                   type="text"
                                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
@@ -581,11 +581,11 @@ const Events = () => {
                                   ))}
                                 </select>
                               </td>
-                              <td className="px-6 py-4">
-                                <div className="">
+                              <td className="px-3 py-4">
+                                <div className="flex gap-3">
                                   <input
                                     type="datetime-local"
-                                    className="w-2/3 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                                    className="w-1/2 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
                                     value={eventEditData.start_datetime || ""}
                                     onChange={(e) =>
                                       setEventEditData({
@@ -597,7 +597,7 @@ const Events = () => {
                                   />
                                   <input
                                     type="datetime-local"
-                                    className="w-2/3 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                                    className="w-1/2 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
                                     value={eventEditData.end_datetime || ""}
                                     min={eventEditData.start_datetime || ""}
                                     onChange={(e) =>
@@ -768,14 +768,14 @@ const Events = () => {
                     <span className="font-medium">{events.length}</span> of{" "}
                     <span className="font-medium">{events.length}</span> events
                   </div>
-                  <div className="flex space-x-2">
+                  {/* <div className="flex space-x-2">
                     <button className="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">
                       Previous
                     </button>
                     <button className="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50">
                       Next
                     </button>
-                  </div>
+                  </div> */}
                 </div>
               )}
             </div>
